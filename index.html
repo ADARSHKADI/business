@@ -96,7 +96,8 @@ Student Father Data Entry Form ૨૦૨૬-૨૭
 
 <div class="col-md-4 mb-3">
 <label>ROLL</label>
-<input type="text" id="roll" class="form-control">
+<input type="text" id="roll" class="form-control"
+oninput="this.value=this.value.replace(/[^0-9]/g,'')">
 </div>
 
 <div class="col-md-4 mb-3">
