@@ -28,23 +28,23 @@ body{
 }
 
 .report-box{
-    background:#ffffff;
-    border-radius:12px;
-    padding:15px;
-    text-align:center;
-    box-shadow:0 2px 8px rgba(0,0,0,.12);
-    border-left:5px solid #0d6efd;
+    background:#fff;
+    border-radius:10px;
+    padding:8px;
+    min-height:60px;
+    box-shadow:0 2px 6px rgba(0,0,0,.08);
+    border-left:4px solid #0d6efd;
 }
 
 .report-class{
+    font-size:15px;
     font-weight:bold;
-    font-size:16px;
 }
 
 .report-count{
-    font-size:30px;
-    color:#0d6efd;
+    font-size:28px;
     font-weight:bold;
+    color:#0d6efd;
 }
 
 .last-update{
@@ -86,7 +86,21 @@ Student Father Data Live Report ૨૦૨૬-૨૭
 </div>
 
 <div class="card-body">
+<div class="card shadow-sm mb-4">
 
+<div class="card-body">
+
+<h4 class="text-center mb-3">
+Father's Business Report
+</h4>
+
+<div style="max-width:450px;margin:auto;">
+<canvas id="businessChart"></canvas>
+</div>
+
+</div>
+
+</div>
 <h4 class="text-center mb-4">
 ક્લાસ પ્રમાણે કુલ એન્ટ્રી
 </h4>
@@ -116,9 +130,51 @@ window.onload = function(){
     setInterval(loadReport,10000);
 
 };
+let businessChart;
 
+function drawBusinessChart(report){
+
+const ctx=document.getElementById("businessChart");
+
+if(businessChart){
+businessChart.destroy();
+}
+
+businessChart=new Chart(ctx,{
+
+type:"pie",
+
+data:{
+
+labels:report.map(x=>x.name),
+
+datasets:[{
+
+data:report.map(x=>x.count)
+
+}]
+
+},
+
+options:{
+
+responsive:true,
+
+plugins:{
+
+legend:{
+position:"right"
+}
+
+}
+
+}
+
+});
+
+}
 function loadReport(){
-
+drawBusinessChart(data.businessReport);
 fetch(API_URL + "?action=report")
 .then(res=>res.json())
 .then(data=>{
@@ -128,7 +184,7 @@ let html="";
 data.forEach(item=>{
 
 html += `
-<div class="col-lg-2 col-md-3 col-6 mb-3">
+<div class="col-lg-2 col-md-2 col-4 mb-2">
 
     <div class="report-box">
 
@@ -166,7 +222,6 @@ console.log(err);
 }
 
 </script>
-
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </body>
 </html>
-```
