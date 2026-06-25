@@ -64,6 +64,16 @@ textarea.form-control{
     font-weight:bold;
 }
 
+.is-invalid{
+border:2px solid #dc3545 !important;
+}
+
+.invalid-feedback{
+display:block;
+font-size:14px;
+font-weight:500;
+}
+
 </style>
 
 </head>
@@ -119,6 +129,7 @@ Student Father Data Entry Form ૨૦૨૬-૨૭
 <select id="std" class="form-select">
 <option value="">Select STD</option>
 </select>
+    <div id="stdError" class="invalid-feedback"></div>
 </div>
 
 <div class="col-md-6 mb-3">
@@ -126,42 +137,50 @@ Student Father Data Entry Form ૨૦૨૬-૨૭
 <select id="className" class="form-select">
 <option value="">Select Class</option>
 </select>
+  <div id="classNameError" class="invalid-feedback"></div>  
 </div>
 
 <div class="col-md-4 mb-3">
 <label>ROLL</label>
 <input type="text" id="roll" class="form-control"
 oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+    <div id="rollError" class="invalid-feedback"></div>
 </div>
 
 <div class="col-md-4 mb-3">
 <label>GR</label>
 <input type="text" id="gr" class="form-control">
+    <div id="grError" class="invalid-feedback"></div>
 </div>
 
 <div class="col-md-4 mb-3">
 <label>વિધાર્થીનું પૂરું નામ (અટક પાછળ લખવી)</label>
 <input type="text" id="student" class="form-control">
+    <div id="studentError" class="invalid-feedback"></div>
 </div>
 
 <div class="col-md-6 mb-3">
 <label>મોબાઈલ નંબર (૧૦ આંકડા)</label>
 <input type="text" id="mobile" class="form-control">
+    <div id="mobileError" class="invalid-feedback"></div>
 </div>
 
 <div class="col-md-6 mb-3">
 <label>ગામ</label>
 <input type="text" id="village" class="form-control">
+    <div id="villageError" class="invalid-feedback"></div>
 </div>
 
 <div class="col-md-6 mb-3">
 <label>તાલુકો</label>
 <input type="text" id="taluka" class="form-control">
+    <div id="talukaError" class="invalid-feedback"></div>
 </div>
 
 <div class="col-md-6 mb-3">
 <label>જીલ્લો</label>
 <input type="text" id="district" class="form-control">
+    <div id="districtError" class="invalid-feedback"></div>
 </div>
 
 <div class="col-md-6 mb-3">
@@ -169,6 +188,7 @@ oninput="this.value=this.value.replace(/[^0-9]/g,'')">
 <select id="category" class="form-select">
 <option value="">Select Category</option>
 </select>
+    <div id="categoryError" class="invalid-feedback"></div>
 </div>
 
 <div class="col-md-6 mb-3">
@@ -176,11 +196,13 @@ oninput="this.value=this.value.replace(/[^0-9]/g,'')">
 <select id="business" class="form-select">
 <option value="">Select Business</option>
 </select>
+    <div id="businessError" class="invalid-feedback"></div>
 </div>
 
 <div class="col-12 mb-3">
 <label>OTHER DETAILS</label>
 <textarea id="other" class="form-control" rows="3"></textarea>
+    <div id="otherError" class="invalid-feedback"></div>
 </div>
 
 <div class="col-md-6 mb-3">
@@ -192,6 +214,7 @@ oninput="this.value=this.value.replace(/[^0-9]/g,'')">
     <option value="છાત્રાલય">છાત્રાલય</option>
     <option value="VHP છાત્રાલય">VHP છાત્રાલય</option>
 </select>
+    <div id="admissionError" class="invalid-feedback"></div>
 </div>
 
 <div class="col-md-6 mb-3">
@@ -202,6 +225,7 @@ oninput="this.value=this.value.replace(/[^0-9]/g,'')">
 <option value="No">ના</option>
 
 </select>
+    <div id="updownError" class="invalid-feedback"></div>
 </div>
 
 <div class="col-12">
@@ -357,24 +381,107 @@ console.log(err);
 
 function saveData(){
 
+clearErrors();
+
+const btn=document.querySelector("button.btn-success");
+
 const data={
 
-std:document.getElementById("std").value,
-className:document.getElementById("className").value,
-roll:document.getElementById("roll").value,
-gr:document.getElementById("gr").value,
-student:document.getElementById("student").value,
-mobile:document.getElementById("mobile").value,
-village:document.getElementById("village").value,
-taluka:document.getElementById("taluka").value,
-district:document.getElementById("district").value,
-category:document.getElementById("category").value,
-business:document.getElementById("business").value,
-other:document.getElementById("other").value,
-admission:document.getElementById("admission").value,
-updown:document.getElementById("updown").value
+std:std.value.trim(),
+className:className.value.trim(),
+roll:roll.value.trim(),
+gr:gr.value.trim(),
+student:student.value.trim(),
+mobile:mobile.value.trim(),
+village:village.value.trim(),
+taluka:taluka.value.trim(),
+district:district.value.trim(),
+category:category.value.trim(),
+business:business.value.trim(),
+other:other.value.trim(),
+admission:admission.value.trim(),
+updown:updown.value.trim()
 
 };
+
+
+// Validation
+
+if(data.std==""){
+showError("std","ધોરણ પસંદ કરો.");
+return;
+}
+
+if(data.className==""){
+showError("className","વર્ગ પસંદ કરો.");
+return;
+}
+
+if(data.roll==""){
+showError("roll","Roll નંબર લખો.");
+return;
+}
+
+if(!/^\d+$/.test(data.roll)){
+showError("roll","માત્ર નંબર લખો.");
+return;
+}
+
+if(data.gr==""){
+showError("gr","GR નંબર લખો.");
+return;
+}
+
+if(data.student==""){
+showError("student","વિદ્યાર્થીનું નામ લખો.");
+return;
+}
+
+if(data.mobile==""){
+showError("mobile","મોબાઈલ નંબર લખો.");
+return;
+}
+
+if(!/^[6-9]\d{9}$/.test(data.mobile)){
+showError("mobile","યોગ્ય 10 અંકનો મોબાઈલ નંબર લખો.");
+return;
+}
+
+if(data.village==""){
+showError("village","ગામ લખો.");
+return;
+}
+
+if(data.taluka==""){
+showError("taluka","તાલુકો લખો.");
+return;
+}
+
+if(data.district==""){
+showError("district","જીલ્લો લખો.");
+return;
+}
+
+if(data.category==""){
+showError("category","Category પસંદ કરો.");
+return;
+}
+
+if(data.business==""){
+showError("business","Business પસંદ કરો.");
+return;
+}
+
+if(data.updown==""){
+showError("updown","અપડાઉન પસંદ કરો.");
+return;
+}
+
+
+// Disable Button
+
+btn.disabled=true;
+btn.innerHTML="Saving...";
 
 fetch(API_URL,{
 method:"POST",
@@ -384,22 +491,25 @@ body:JSON.stringify(data)
 .then(response=>{
 
 if(response.status){
+
 loadReport();
-document.getElementById("msg").innerHTML =
-'<div class="alert alert-success">Data Saved Successfully</div>';
 
-document.getElementById("roll").value="";
-document.getElementById("gr").value="";
-document.getElementById("student").value="";
-document.getElementById("mobile").value="";
-document.getElementById("village").value="";
-document.getElementById("taluka").value="";
-document.getElementById("district").value="";
-document.getElementById("other").value="";
+msg.innerHTML=
+'<div class="alert alert-success">✅ માહિતી સફળતાપૂર્વક સેવ થઈ ગઈ.</div>';
 
-}else{
+document.querySelectorAll("input,textarea").forEach(el=>el.value="");
 
-document.getElementById("msg").innerHTML =
+category.selectedIndex=0;
+business.innerHTML='<option value="">Select Business</option>';
+updown.selectedIndex=0;
+admission.selectedIndex=0;
+
+roll.focus();
+
+}
+else{
+
+msg.innerHTML=
 '<div class="alert alert-danger">'+response.message+'</div>';
 
 }
@@ -407,13 +517,37 @@ document.getElementById("msg").innerHTML =
 })
 .catch(err=>{
 
-document.getElementById("msg").innerHTML =
+msg.innerHTML=
 '<div class="alert alert-danger">'+err+'</div>';
+
+})
+.finally(()=>{
+
+btn.disabled=false;
+btn.innerHTML="Save Data";
 
 });
 
 }
+function clearErrors(){
 
+document.querySelectorAll(".form-control,.form-select").forEach(el=>{
+el.classList.remove("is-invalid");
+});
+
+document.querySelectorAll(".invalid-feedback").forEach(el=>{
+el.innerHTML="";
+});
+
+}
+
+function showError(id,msg){
+
+document.getElementById(id).classList.add("is-invalid");
+document.getElementById(id+"Error").innerHTML=msg;
+document.getElementById(id).focus();
+
+}
 
 </script>
 
