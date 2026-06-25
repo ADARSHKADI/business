@@ -12,11 +12,7 @@
 <style>
 
 body{
-    background-color:#f4f8fc;
-    background-image:
-    radial-gradient(circle at 25px 25px, rgba(13,110,253,.05) 2px, transparent 2px),
-    radial-gradient(circle at 75px 75px, rgba(13,110,253,.03) 2px, transparent 2px);
-    background-size:100px 100px;
+   
     font-family: "Arial Unicode MS", "Lucida Sans Unicode", Arial, sans-serif;
 }
 
@@ -136,7 +132,7 @@ Student Father Data Entry Form ૨૦૨૬-૨૭
 <div class="col-md-6 mb-3">
 <label>ધોરણ</label>
 <select id="std" class="form-select">
-<option value="">Select STD</option>
+<option value="">ધોરણ પસંદ કરો </option>
 </select>
     <div id="stdError" class="invalid-feedback"></div>
 </div>
@@ -144,20 +140,20 @@ Student Father Data Entry Form ૨૦૨૬-૨૭
 <div class="col-md-6 mb-3">
 <label>વર્ગ</label>
 <select id="className" class="form-select">
-<option value="">Select Class</option>
+<option value="">વર્ગ પસંદ કરો</option>
 </select>
   <div id="classNameError" class="invalid-feedback"></div>  
 </div>
 
 <div class="col-md-4 mb-3">
-<label>ROLL</label>
+<label>રોલ નંબર </label>
 <input type="text" id="roll" class="form-control"
 oninput="this.value=this.value.replace(/[^0-9]/g,'')">
     <div id="rollError" class="invalid-feedback"></div>
 </div>
 
 <div class="col-md-4 mb-3">
-<label>GR</label>
+<label>જી.આર નંબર </label>
 <input type="text" id="gr" class="form-control">
     <div id="grError" class="invalid-feedback"></div>
 </div>
@@ -193,23 +189,23 @@ oninput="this.value=this.value.replace(/[^0-9]/g,'')">
 </div>
 
 <div class="col-md-6 mb-3">
-<label>BUSINESS CATEGORY</label>
+<label>વ્યવસાયનો પ્રકાર </label>
 <select id="category" class="form-select">
-<option value="">Select Category</option>
+<option value="">વ્યવસાયનો પ્રકાર પસંદ કરો</option>
 </select>
     <div id="categoryError" class="invalid-feedback"></div>
 </div>
 
 <div class="col-md-6 mb-3">
-<label>FATHERS BUSINESS</label>
+<label>વ્યવસાય </label>
 <select id="business" class="form-select">
-<option value="">Select Business</option>
+<option value="">વ્યવસાય પસંદ કરો</option>
 </select>
     <div id="businessError" class="invalid-feedback"></div>
 </div>
 
 <div class="col-12 mb-3">
-<label>OTHER DETAILS</label>
+<label>અન્ય વિગત </label>
 <textarea id="other" class="form-control" rows="3"></textarea>
     <div id="otherError" class="invalid-feedback"></div>
 </div>
@@ -229,7 +225,7 @@ oninput="this.value=this.value.replace(/[^0-9]/g,'')">
 <div class="col-md-6 mb-3">
 <label>શું વિદ્યાર્થી અપડાઉન કરે છે?</label>
 <select id="updown" class="form-select">
-<option value="">Select</option>
+<option value="">પસંદ કરો</option>
 <option value="Yes">હા</option>
 <option value="No">ના</option>
 
