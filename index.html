@@ -1377,53 +1377,107 @@ function loadClasses(){
 // ROLL SEARCH
 // ======================================================
 
-let searchTimer = null;
-
 let lastSearchedKey = "";
 
 
+// ======================================================
+// ROLL NUMBER - SEARCH ONLY AFTER NEXT / ENTER
+// ======================================================
+
 document
 .getElementById("roll")
-.addEventListener("input", function(){
+.addEventListener("keydown", function(e){
 
-    const rollValue =
-    this.value.trim();
+    // Enter / Next button
+    if(e.key === "Enter"){
 
+        e.preventDefault();
 
-    clearTimeout(searchTimer);
-
-
-    if(!rollValue){
-
-        hideSearchStatus();
-
-        return;
+        searchRollStudent();
 
     }
 
+});
+
+
+// ======================================================
+// SEARCH ROLL STUDENT
+// ======================================================
+
+function searchRollStudent(){
+
+    const roll =
+    document.getElementById("roll")
+    .value.trim();
 
     const std =
-    document.getElementById("std").value;
+    document.getElementById("std")
+    .value.trim();
 
     const className =
-    document.getElementById("className").value;
+    document.getElementById("className")
+    .value.trim();
 
 
-    if(!std || !className){
+    // STD check
+    if(!std){
+
+        showError(
+            "std",
+            "ધોરણ પસંદ કરો."
+        );
 
         return;
 
     }
 
 
-    // Prevent repeated search
+    // CLASS check
+    if(!className){
+
+        showError(
+            "className",
+            "વર્ગ પસંદ કરો."
+        );
+
+        return;
+
+    }
+
+
+    // ROLL check
+    if(!roll){
+
+        showError(
+            "roll",
+            "Roll નંબર લખો."
+        );
+
+        return;
+
+    }
+
+
+    // Only numbers
+    if(!/^\d+$/.test(roll)){
+
+        showError(
+            "roll",
+            "માત્ર નંબર લખો."
+        );
+
+        return;
+
+    }
+
 
     const key =
     std + "|" +
     className + "|" +
-    rollValue;
+    roll;
 
 
+    // Same roll already searched
     if(key === lastSearchedKey){
 
         return;
@@ -1431,19 +1485,13 @@ document
     }
 
 
-    searchTimer =
-    setTimeout(function(){
+    searchStudent(
+        std,
+        className,
+        roll
+    );
 
-        searchStudent(
-            std,
-            className,
-            rollValue
-        );
-
-    },500);
-
-});
-
+}
 
 // ======================================================
 // SEARCH STUDENT
