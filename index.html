@@ -1298,17 +1298,17 @@ const TALUKA_DATA = {
 // PAGE LOAD
 // ======================================================
 
-window.onload = function(){
+window.addEventListener("load", function(){
 
     loadClasses();
-
     loadDistricts();
 
+    // Category is the only small server list needed at startup.
+    // Report API call was removed from page load because it is not
+    // required on the entry form and was adding an extra request.
     loadCategory();
 
-    loadReport();
-
-};
+});
 
 
 // ======================================================
@@ -1327,68 +1327,149 @@ document
     classSelect.innerHTML =
     '<option value="">વર્ગ પસંદ કરો</option>';
 
+    clearStudentFields();
 
     if(!selectedStd){
-
         return;
-
     }
 
+    (CLASS_DATA[selectedStd] || []).forEach(function(cls){
 
-    CLASS_DATA[selectedStd]
-    .forEach(function(cls){
-
-        const option =
-        document.createElement("option");
-
+        const option = document.createElement("option");
         option.value = cls;
-
         option.textContent = cls;
-
         classSelect.appendChild(option);
 
     });
-
-
-    clearStudentFields();
 
 });
 
 
 // ======================================================
-// LOAD CLASS INITIAL
+// CLASS CHANGE - PRELOAD STUDENT DATA
 // ======================================================
 
-function loadClasses(){
+let classStudentCache = {};
+let classLoadPromises = {};
+let activeClassKey = "";
 
-    const std =
-    document.getElementById("std");
 
-    if(std.value){
+document
+.getElementById("className")
+.addEventListener("change", function(){
 
-        std.dispatchEvent(
-            new Event("change")
-        );
+    const std = document.getElementById("std").value;
+    const className = this.value;
 
+    clearStudentFields();
+    lastSearchedKey = "";
+
+    if(!std || !className){
+        activeClassKey = "";
+        hideSearchStatus();
+        return;
     }
 
+    activeClassKey = std + "|" + className;
+    preloadClassStudents(std, className);
+
+});
+
+
+// ======================================================
+// PRELOAD STUDENTS FOR SELECTED CLASS
+// ======================================================
+
+function preloadClassStudents(std, className){
+
+    const key = std + "|" + className;
+
+    if(classStudentCache[key]){
+        return Promise.resolve(classStudentCache[key]);
+    }
+
+    if(classLoadPromises[key]){
+        return classLoadPromises[key];
+    }
+
+    showSearchStatus("Loading class students...");
+
+    const url =
+        API_URL +
+        "?action=studentClass" +
+        "&std=" + encodeURIComponent(std) +
+        "&className=" + encodeURIComponent(className);
+
+    classLoadPromises[key] = fetchWithTimeout(url, 12000)
+    .then(function(res){
+
+        if(!res.ok){
+            throw new Error("Server returned " + res.status);
+        }
+
+        return res.json();
+
+    })
+    .then(function(response){
+
+        if(!response.status){
+            throw new Error(response.message || "Class student data could not be loaded.");
+        }
+
+        const list = Array.isArray(response.students)
+            ? response.students
+            : [];
+
+        const index = {};
+
+        list.forEach(function(student){
+            const roll = String(student.roll || "").trim();
+            if(roll){
+                index[roll] = student;
+            }
+        });
+
+        classStudentCache[key] = index;
+
+        return index;
+
+    })
+    .catch(function(err){
+
+        console.log("Class preload error:", err);
+
+        // Do not show a scary error immediately. Search can retry from server.
+        return null;
+
+    })
+    .finally(function(){
+
+        delete classLoadPromises[key];
+
+        if(activeClassKey === key){
+            hideSearchStatus();
+        }
+
+    });
+
+    return classLoadPromises[key];
 }
 
 
 // ======================================================
-// ROLL SEARCH
+// ROLL SEARCH - LOCAL FIRST
 // ======================================================
 
 let searchTimer = null;
-
 let lastSearchedKey = "";
+let searchRequestNo = 0;
+
 
 document
 .getElementById("roll")
 .addEventListener("input", function(){
 
-    const rollValue =
-    this.value.trim();
+    const rollValue = this.value.trim();
 
     clearTimeout(searchTimer);
 
@@ -1398,148 +1479,240 @@ document
     }
 
     const std =
-    document.getElementById("std").value;
+        document.getElementById("std").value;
 
     const className =
-    document.getElementById("className").value;
+        document.getElementById("className").value;
 
     if(!std || !className){
         return;
     }
 
     const key =
-    std + "|" +
-    className + "|" +
-    rollValue;
+        std + "|" + className + "|" + rollValue;
 
     if(key === lastSearchedKey){
         return;
     }
 
-    searchTimer =
-    setTimeout(function(){
-
-        searchStudent(
-            std,
-            className,
-            rollValue
-        );
-
-    },1500);
+    // 250 ms is enough for normal typing and feels much faster than 1500 ms.
+    searchTimer = setTimeout(function(){
+        searchStudentFast(std, className, rollValue);
+    }, 250);
 
 });
+
+
 // ======================================================
-// SEARCH STUDENT
+// FAST STUDENT SEARCH
 // ======================================================
 
-function searchStudent(
-    std,
-    className,
-    roll
-){
+async function searchStudentFast(std, className, roll){
 
-    showSearchStatus();
+    const key = std + "|" + className + "|" + roll;
+    const classKey = std + "|" + className;
+    const requestId = ++searchRequestNo;
 
+    if(key === lastSearchedKey){
+        return;
+    }
 
-    const url =
-    API_URL +
-    "?action=studentSearch" +
-    "&std=" +
-    encodeURIComponent(std) +
-    "&className=" +
-    encodeURIComponent(className) +
-    "&roll=" +
-    encodeURIComponent(roll);
+    // --------------------------------------------------
+    // 1. Search in browser memory first - normally instant.
+    // --------------------------------------------------
 
+    const cached = classStudentCache[classKey];
 
-    fetch(url)
+    if(cached){
 
-    .then(res => res.json())
+        const student = cached[String(roll).trim()];
 
-    .then(response => {
+        if(requestId !== searchRequestNo){
+            return;
+        }
+
+        if(student){
+            lastSearchedKey = key;
+            showStudentPopup(student);
+        }
+        else{
+            showStudentNotFound();
+        }
+
+        hideSearchStatus();
+        return;
+    }
+
+    // --------------------------------------------------
+    // 2. If preload has not finished, wait for it.
+    // --------------------------------------------------
+
+    showSearchStatus("Searching student...");
+
+    const loaded = await preloadClassStudents(std, className);
+
+    if(requestId !== searchRequestNo){
+        return;
+    }
+
+    if(loaded){
+
+        const student = loaded[String(roll).trim()];
 
         hideSearchStatus();
 
-
-        if(
-            response.status &&
-            response.found
-        ){
-
-            lastSearchedKey =
-            std + "|" +
-            className + "|" +
-            roll;
-
-
-            showStudentPopup(
-                response.student
-            );
-
+        if(student){
+            lastSearchedKey = key;
+            showStudentPopup(student);
         }
-
-        else if(
-            response.status &&
-            !response.found
-        ){
-
-            Swal.fire({
-
-                icon:"info",
-
-                title:"Student Not Found",
-
-                html:
-                "<b>Fill details manually.</b><br>" +
-                "આ વિદ્યાર્થીની વિગતો જાતે ભરો.",
-
-                confirmButtonText:"OK",
-
-                confirmButtonColor:"#0d6efd"
-
-            });
-
-        }
-
         else{
-
-            Swal.fire({
-
-                icon:"error",
-
-                title:"Search Error",
-
-                text:
-                response.message ||
-                "Student search failed."
-
-            });
-
+            showStudentNotFound();
         }
+
+        return;
+    }
+
+    // --------------------------------------------------
+    // 3. Fallback: direct server search with retry.
+    // --------------------------------------------------
+
+    searchStudentServer(std, className, roll, requestId);
+}
+
+
+// ======================================================
+// SERVER FALLBACK SEARCH
+// ======================================================
+
+function searchStudentServer(std, className, roll, requestId, attempt){
+
+    attempt = attempt || 1;
+
+    showSearchStatus(
+        attempt === 1
+        ? "Connecting to student database..."
+        : "Retrying student search..."
+    );
+
+    const url =
+        API_URL +
+        "?action=studentSearch" +
+        "&std=" + encodeURIComponent(std) +
+        "&className=" + encodeURIComponent(className) +
+        "&roll=" + encodeURIComponent(roll);
+
+    fetchWithTimeout(url, 12000)
+    .then(function(res){
+
+        if(!res.ok){
+            throw new Error("Server returned " + res.status);
+        }
+
+        return res.json();
 
     })
+    .then(function(response){
 
-    .catch(err => {
+        if(requestId !== searchRequestNo){
+            return;
+        }
+
+        hideSearchStatus();
+
+        if(response.status && response.found){
+
+            lastSearchedKey =
+                std + "|" + className + "|" + roll;
+
+            // Save this student into browser cache too.
+            const classKey = std + "|" + className;
+            classStudentCache[classKey] =
+                classStudentCache[classKey] || {};
+            classStudentCache[classKey][String(roll).trim()] = response.student;
+
+            showStudentPopup(response.student);
+            return;
+        }
+
+        if(response.status && !response.found){
+            showStudentNotFound();
+            return;
+        }
+
+        throw new Error(response.message || "Student search failed.");
+
+    })
+    .catch(function(err){
+
+        console.log("Student search error:", err);
+
+        if(requestId !== searchRequestNo){
+            return;
+        }
+
+        if(attempt < 2){
+
+            setTimeout(function(){
+                searchStudentServer(
+                    std,
+                    className,
+                    roll,
+                    requestId,
+                    attempt + 1
+                );
+            }, 700);
+
+            return;
+        }
 
         hideSearchStatus();
 
         Swal.fire({
-
-            icon:"error",
-
-            title:"Connection Error",
-
-            text:
-            "Student search failed. Please try again."
-
+            icon:"warning",
+            title:"Student Search Delayed",
+            text:"Student database is taking too long to respond. Please try the roll number again.",
+            confirmButtonText:"OK",
+            confirmButtonColor:"#0d6efd"
         });
 
-        console.log(err);
-
     });
-
 }
 
+
+// ======================================================
+// STUDENT NOT FOUND
+// ======================================================
+
+function showStudentNotFound(){
+
+    Swal.fire({
+        icon:"info",
+        title:"Student Not Found",
+        html:
+            "<b>Fill details manually.</b><br>" +
+            "આ વિદ્યાર્થીની વિગતો જાતે ભરો.",
+        confirmButtonText:"OK",
+        confirmButtonColor:"#0d6efd"
+    });
+}
+
+
+// ======================================================
+// FETCH WITH TIMEOUT
+// ======================================================
+
+function fetchWithTimeout(url, timeoutMs){
+
+    const controller = new AbortController();
+    const timer = setTimeout(function(){
+        controller.abort();
+    }, timeoutMs);
+
+    return fetch(url, { signal: controller.signal })
+        .finally(function(){
+            clearTimeout(timer);
+        });
+}
 
 // ======================================================
 // STUDENT POPUP
@@ -2318,11 +2491,17 @@ function hideLoader(){
 // SEARCH STATUS
 // ======================================================
 
-function showSearchStatus(){
+function showSearchStatus(message){
 
-    document
-    .getElementById("studentSearchStatus")
-    .style.display = "block";
+    const el = document.getElementById("studentSearchStatus");
+
+    if(message){
+        el.innerHTML =
+            '<span class="mini-spinner"></span>' +
+            escapeHtml(message);
+    }
+
+    el.style.display = "block";
 
 }
 
