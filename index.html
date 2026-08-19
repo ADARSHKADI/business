@@ -1352,6 +1352,40 @@ document
 let classStudentCache = {};
 let classLoadPromises = {};
 let activeClassKey = "";
+const BROWSER_CACHE_TTL = 6 * 60 * 60 * 1000; // 6 hours
+
+function getStudentSessionCache(key){
+    try{
+        const raw = sessionStorage.getItem("student_class_cache_" + key);
+        if(!raw) return null;
+
+        const obj = JSON.parse(raw);
+        if(!obj || !obj.time || !obj.data) return null;
+
+        if(Date.now() - obj.time > BROWSER_CACHE_TTL){
+            sessionStorage.removeItem("student_class_cache_" + key);
+            return null;
+        }
+
+        return obj.data;
+    }catch(e){
+        return null;
+    }
+}
+
+function setStudentSessionCache(key, data){
+    try{
+        sessionStorage.setItem(
+            "student_class_cache_" + key,
+            JSON.stringify({
+                time: Date.now(),
+                data: data
+            })
+        );
+    }catch(e){
+        // Storage quota/private mode: memory cache still works.
+    }
+}
 
 
 document
@@ -1388,11 +1422,17 @@ function preloadClassStudents(std, className){
         return Promise.resolve(classStudentCache[key]);
     }
 
+    const sessionCached = getStudentSessionCache(key);
+    if(sessionCached){
+        classStudentCache[key] = sessionCached;
+        return Promise.resolve(sessionCached);
+    }
+
     if(classLoadPromises[key]){
         return classLoadPromises[key];
     }
 
-    showSearchStatus("Loading class students...");
+    showSearchStatus("વિદ્યાર્થીની માહિતી લોડ થઈ રહી છે...");
 
     const url =
         API_URL +
@@ -1400,7 +1440,7 @@ function preloadClassStudents(std, className){
         "&std=" + encodeURIComponent(std) +
         "&className=" + encodeURIComponent(className);
 
-    classLoadPromises[key] = fetchWithTimeout(url, 12000)
+    classLoadPromises[key] = fetchWithTimeout(url, 8000)
     .then(function(res){
 
         if(!res.ok){
@@ -1430,6 +1470,7 @@ function preloadClassStudents(std, className){
         });
 
         classStudentCache[key] = index;
+        setStudentSessionCache(key, index);
 
         return index;
 
@@ -1498,7 +1539,7 @@ document
     // 250 ms is enough for normal typing and feels much faster than 1500 ms.
     searchTimer = setTimeout(function(){
         searchStudentFast(std, className, rollValue);
-    }, 1700);
+    }, 250);
 
 });
 
@@ -1547,7 +1588,7 @@ async function searchStudentFast(std, className, roll){
     // 2. If preload has not finished, wait for it.
     // --------------------------------------------------
 
-    showSearchStatus("Searching student...");
+    showSearchStatus("વિદ્યાર્થી શોધી રહ્યા છીએ...");
 
     const loaded = await preloadClassStudents(std, className);
 
@@ -1590,8 +1631,8 @@ function searchStudentServer(std, className, roll, requestId, attempt){
 
     showSearchStatus(
         attempt === 1
-        ? "Connecting to student database..."
-        : "Retrying student search..."
+        ? "વિદ્યાર્થીની માહિતી મેળવી રહ્યા છીએ..."
+        : "ફરીથી પ્રયાસ કરી રહ્યા છીએ..."
     );
 
     const url =
@@ -1601,7 +1642,7 @@ function searchStudentServer(std, className, roll, requestId, attempt){
         "&className=" + encodeURIComponent(className) +
         "&roll=" + encodeURIComponent(roll);
 
-    fetchWithTimeout(url, 12000)
+    fetchWithTimeout(url, 8000)
     .then(function(res){
 
         if(!res.ok){
@@ -1669,8 +1710,8 @@ function searchStudentServer(std, className, roll, requestId, attempt){
 
         Swal.fire({
             icon:"warning",
-            title:"Student Search Delayed",
-            text:"Student database is taking too long to respond. Please try the roll number again.",
+            title:"વિદ્યાર્થીની માહિતી મળી નથી",
+            text:"સર્વરનો જવાબ મળવામાં વિલંબ થયો છે. કૃપા કરીને થોડા સેકન્ડ પછી ફરી Roll No. નાખો.",
             confirmButtonText:"OK",
             confirmButtonColor:"#0d6efd"
         });
@@ -1823,90 +1864,83 @@ function showStudentPopup(student){
 
 
 // ======================================================
-// DISTRICT LOAD
+// LOCATION CACHE - ALL DISTRICTS + TALUKAS IN BROWSER MEMORY
+// ======================================================
+
+const LOCATION_CACHE = {
+    districts: Object.keys(TALUKA_DATA).sort(),
+    talukas: TALUKA_DATA
+};
+
+const DISTRICT_INDEX = {};
+LOCATION_CACHE.districts.forEach(function(name){
+    DISTRICT_INDEX[name] = LOCATION_CACHE.talukas[name] || [];
+});
+
+
+// ======================================================
+// LOAD DISTRICTS - MEMORY ONLY
 // ======================================================
 
 function loadDistricts(){
 
-    const district =
-    document.getElementById("district");
+    const district = document.getElementById("district");
+    const fragment = document.createDocumentFragment();
 
+    district.innerHTML = '<option value="">જિલ્લો પસંદ કરો</option>';
 
-    const districts =
-    Object.keys(TALUKA_DATA)
-    .sort();
+    LOCATION_CACHE.districts.forEach(function(name){
 
-
-    districts.forEach(function(name){
-
-        const option =
-        document.createElement("option");
-
+        const option = document.createElement("option");
         option.value = name;
-
         option.textContent = name;
 
-        district.appendChild(option);
-
+        fragment.appendChild(option);
     });
 
+    district.appendChild(fragment);
 }
 
 
 // ======================================================
-// DISTRICT CHANGE
+// DISTRICT CHANGE - TALUKA FROM MEMORY
 // ======================================================
 
 document
 .getElementById("district")
 .addEventListener("change", function(){
 
-    const districtName =
-    this.value;
+    const districtName = this.value;
+    const taluka = document.getElementById("taluka");
 
-
-    const taluka =
-    document.getElementById("taluka");
-
-
-    taluka.innerHTML =
-    '<option value="">તાલુકો પસંદ કરો</option>';
-
+    taluka.innerHTML = '<option value="">તાલુકો પસંદ કરો</option>';
 
     if(!districtName){
-
         taluka.disabled = true;
-
         return;
-
     }
 
-
-    const list =
-    TALUKA_DATA[districtName] || [];
-
+    const list = DISTRICT_INDEX[districtName] || [];
+    const fragment = document.createDocumentFragment();
 
     list.forEach(function(name){
 
-        const option =
-        document.createElement("option");
-
+        const option = document.createElement("option");
         option.value = name;
-
         option.textContent = name;
 
-        taluka.appendChild(option);
-
+        fragment.appendChild(option);
     });
 
-
+    taluka.appendChild(fragment);
     taluka.disabled = false;
-
 });
 
 
 // ======================================================
-// BUSINESS DATA - DIRECTLY IN HTML
+// BUSINESS DATA - DIRECTLY IN HTML + BROWSER MEMORY
+// ======================================================
+
 // No Google Apps Script request is needed for category/business.
 // This makes both dropdowns instant.
 // ======================================================
@@ -1960,50 +1994,84 @@ const BUSINESS_DATA = {
 
 
 // ======================================================
-// LOAD CATEGORY - LOCAL
+// BUSINESS CACHE - CATEGORY + BUSINESS BOTH IN MEMORY
+// ======================================================
+
+const BUSINESS_CACHE = {
+    categories: Object.keys(BUSINESS_DATA).slice(),
+    businesses: BUSINESS_DATA
+};
+
+const BUSINESS_CATEGORY_INDEX = {};
+BUSINESS_CACHE.categories.forEach(function(category){
+    BUSINESS_CATEGORY_INDEX[category] =
+        BUSINESS_CACHE.businesses[category] || [];
+});
+
+
+// ======================================================
+// LOAD CATEGORY - MEMORY ONLY
 // ======================================================
 
 function loadCategory(){
+
     const category = document.getElementById("category");
+    const fragment = document.createDocumentFragment();
 
     category.innerHTML =
         '<option value="">વ્યવસાયનો પ્રકાર પસંદ કરો</option>';
 
-    Object.keys(BUSINESS_DATA).forEach(function(item){
+    BUSINESS_CACHE.categories.forEach(function(item){
+
         const option = document.createElement("option");
         option.value = item;
         option.textContent = item;
-        category.appendChild(option);
+
+        fragment.appendChild(option);
     });
+
+    category.appendChild(fragment);
 }
 
 
 // ======================================================
-// CATEGORY CHANGE → BUSINESS - LOCAL
+// CATEGORY CHANGE → BUSINESS FROM MEMORY
 // ======================================================
 
-document.getElementById("category").addEventListener("change", function(){
+document
+.getElementById("category")
+.addEventListener("change", function(){
+
     const category = this.value;
     const businessSelect = document.getElementById("business");
 
     businessSelect.innerHTML =
         '<option value="">વ્યવસાય પસંદ કરો</option>';
 
-    if(!category || !BUSINESS_DATA[category]){
+    if(!category){
         return;
     }
 
-    BUSINESS_DATA[category].forEach(function(item){
+    const list = BUSINESS_CATEGORY_INDEX[category] || [];
+    const fragment = document.createDocumentFragment();
+
+    list.forEach(function(item){
+
         const option = document.createElement("option");
         option.value = item;
         option.textContent = item;
-        businessSelect.appendChild(option);
+
+        fragment.appendChild(option);
     });
+
+    businessSelect.appendChild(fragment);
 });
 
 
 // ======================================================
 // SAVE DATA
+// ======================================================
+
 // ======================================================
 
 function saveData(){
