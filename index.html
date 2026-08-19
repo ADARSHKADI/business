@@ -1300,17 +1300,16 @@ const TALUKA_DATA = {
 
 window.addEventListener("load", function(){
 
-    loadClasses();
+    // Load district directly from browser memory
     loadDistricts();
 
-    // Load the complete student database once.
-    // All later student searches are browser-only.
-    loadStudentDatabase().catch(function(){});
-
-    // Category is the only small server list needed at startup.
-    // Report API call was removed from page load because it is not
-    // required on the entry form and was adding an extra request.
+    // Load business category directly from browser memory
     loadCategory();
+
+    // Load complete student database
+    loadStudentDatabase().catch(function(error){
+        console.error("Student database:", error);
+    });
 
 });
 
