@@ -1352,40 +1352,6 @@ document
 let classStudentCache = {};
 let classLoadPromises = {};
 let activeClassKey = "";
-const BROWSER_CACHE_TTL = 6 * 60 * 60 * 1000; // 6 hours
-
-function getStudentSessionCache(key){
-    try{
-        const raw = sessionStorage.getItem("student_class_cache_" + key);
-        if(!raw) return null;
-
-        const obj = JSON.parse(raw);
-        if(!obj || !obj.time || !obj.data) return null;
-
-        if(Date.now() - obj.time > BROWSER_CACHE_TTL){
-            sessionStorage.removeItem("student_class_cache_" + key);
-            return null;
-        }
-
-        return obj.data;
-    }catch(e){
-        return null;
-    }
-}
-
-function setStudentSessionCache(key, data){
-    try{
-        sessionStorage.setItem(
-            "student_class_cache_" + key,
-            JSON.stringify({
-                time: Date.now(),
-                data: data
-            })
-        );
-    }catch(e){
-        // Storage quota/private mode: memory cache still works.
-    }
-}
 
 
 document
@@ -1422,17 +1388,11 @@ function preloadClassStudents(std, className){
         return Promise.resolve(classStudentCache[key]);
     }
 
-    const sessionCached = getStudentSessionCache(key);
-    if(sessionCached){
-        classStudentCache[key] = sessionCached;
-        return Promise.resolve(sessionCached);
-    }
-
     if(classLoadPromises[key]){
         return classLoadPromises[key];
     }
 
-    showSearchStatus("વિદ્યાર્થીની માહિતી લોડ થઈ રહી છે...");
+    showSearchStatus("Loading class students...");
 
     const url =
         API_URL +
@@ -1440,7 +1400,7 @@ function preloadClassStudents(std, className){
         "&std=" + encodeURIComponent(std) +
         "&className=" + encodeURIComponent(className);
 
-    classLoadPromises[key] = fetchWithTimeout(url, 8000)
+    classLoadPromises[key] = fetchWithTimeout(url, 12000)
     .then(function(res){
 
         if(!res.ok){
@@ -1470,7 +1430,6 @@ function preloadClassStudents(std, className){
         });
 
         classStudentCache[key] = index;
-        setStudentSessionCache(key, index);
 
         return index;
 
@@ -1588,7 +1547,7 @@ async function searchStudentFast(std, className, roll){
     // 2. If preload has not finished, wait for it.
     // --------------------------------------------------
 
-    showSearchStatus("વિદ્યાર્થી શોધી રહ્યા છીએ...");
+    showSearchStatus("Searching student...");
 
     const loaded = await preloadClassStudents(std, className);
 
@@ -1631,8 +1590,8 @@ function searchStudentServer(std, className, roll, requestId, attempt){
 
     showSearchStatus(
         attempt === 1
-        ? "વિદ્યાર્થીની માહિતી મેળવી રહ્યા છીએ..."
-        : "ફરીથી પ્રયાસ કરી રહ્યા છીએ..."
+        ? "Connecting to student database..."
+        : "Retrying student search..."
     );
 
     const url =
@@ -1642,7 +1601,7 @@ function searchStudentServer(std, className, roll, requestId, attempt){
         "&className=" + encodeURIComponent(className) +
         "&roll=" + encodeURIComponent(roll);
 
-    fetchWithTimeout(url, 8000)
+    fetchWithTimeout(url, 12000)
     .then(function(res){
 
         if(!res.ok){
@@ -1710,8 +1669,8 @@ function searchStudentServer(std, className, roll, requestId, attempt){
 
         Swal.fire({
             icon:"warning",
-            title:"વિદ્યાર્થીની માહિતી મળી નથી",
-            text:"સર્વરનો જવાબ મળવામાં વિલંબ થયો છે. કૃપા કરીને થોડા સેકન્ડ પછી ફરી Roll No. નાખો.",
+            title:"Student Search Delayed",
+            text:"Student database is taking too long to respond. Please try the roll number again.",
             confirmButtonText:"OK",
             confirmButtonColor:"#0d6efd"
         });
@@ -1864,214 +1823,190 @@ function showStudentPopup(student){
 
 
 // ======================================================
-// LOCATION CACHE - ALL DISTRICTS + TALUKAS IN BROWSER MEMORY
-// ======================================================
-
-const LOCATION_CACHE = {
-    districts: Object.keys(TALUKA_DATA).sort(),
-    talukas: TALUKA_DATA
-};
-
-const DISTRICT_INDEX = {};
-LOCATION_CACHE.districts.forEach(function(name){
-    DISTRICT_INDEX[name] = LOCATION_CACHE.talukas[name] || [];
-});
-
-
-// ======================================================
-// LOAD DISTRICTS - MEMORY ONLY
+// DISTRICT LOAD
 // ======================================================
 
 function loadDistricts(){
 
-    const district = document.getElementById("district");
-    const fragment = document.createDocumentFragment();
+    const district =
+    document.getElementById("district");
 
-    district.innerHTML = '<option value="">જિલ્લો પસંદ કરો</option>';
 
-    LOCATION_CACHE.districts.forEach(function(name){
+    const districts =
+    Object.keys(TALUKA_DATA)
+    .sort();
 
-        const option = document.createElement("option");
+
+    districts.forEach(function(name){
+
+        const option =
+        document.createElement("option");
+
         option.value = name;
+
         option.textContent = name;
 
-        fragment.appendChild(option);
+        district.appendChild(option);
+
     });
 
-    district.appendChild(fragment);
 }
 
 
 // ======================================================
-// DISTRICT CHANGE - TALUKA FROM MEMORY
+// DISTRICT CHANGE
 // ======================================================
 
 document
 .getElementById("district")
 .addEventListener("change", function(){
 
-    const districtName = this.value;
-    const taluka = document.getElementById("taluka");
+    const districtName =
+    this.value;
 
-    taluka.innerHTML = '<option value="">તાલુકો પસંદ કરો</option>';
+
+    const taluka =
+    document.getElementById("taluka");
+
+
+    taluka.innerHTML =
+    '<option value="">તાલુકો પસંદ કરો</option>';
+
 
     if(!districtName){
+
         taluka.disabled = true;
+
         return;
+
     }
 
-    const list = DISTRICT_INDEX[districtName] || [];
-    const fragment = document.createDocumentFragment();
+
+    const list =
+    TALUKA_DATA[districtName] || [];
+
 
     list.forEach(function(name){
 
-        const option = document.createElement("option");
+        const option =
+        document.createElement("option");
+
         option.value = name;
+
         option.textContent = name;
 
-        fragment.appendChild(option);
+        taluka.appendChild(option);
+
     });
 
-    taluka.appendChild(fragment);
+
     taluka.disabled = false;
+
 });
 
 
 // ======================================================
-// BUSINESS DATA - DIRECTLY IN HTML + BROWSER MEMORY
-// ======================================================
-
-// No Google Apps Script request is needed for category/business.
-// This makes both dropdowns instant.
-// ======================================================
-
-const BUSINESS_DATA = {
-    "ખેતી અને પશુપાલન": [
-        "ખેડૂત",
-        "ડેરી ફાર્મર",
-        "પશુપાલક"
-    ],
-    "સરકારી નોકરી": [
-        "પ્રાથમિક શાળામાં શિક્ષક",
-        "માધ્યમિક  શાળામાં શિક્ષક",
-        "ઉ. માધ્યમિક  શાળામાં શિક્ષક",
-        "પોલીસ",
-        "ક્લાર્ક",
-        "સરકારી અધિકારી",
-        "અન્ય"
-    ],
-    "ખાનગી નોકરી": [
-        "કંપની કર્મચારી",
-        "મેનેજર",
-        "સેલ્સમેન",
-        "અન્ય - ખાનગી નોકરી"
-    ],
-    "વેપાર / ધંધો": [
-        "દુકાનદાર",
-        "હોલસેલ વેપારી",
-        "રિટેલ વેપારી",
-        "અન્ય - વેપાર / ધંધો"
-    ],
-    "ઉદ્યોગ / ઉત્પાદન": [
-        "ફેક્ટરી માલિક",
-        "ઉદ્યોગપતિ",
-        "અન્ય - ઉદ્યોગ / ઉત્પાદન"
-    ],
-    "વ્યક્તિગત વ્યવસાય": [
-        "પ્લંબરિંગ",
-        "ઇલેક્ટ્રિશિયન",
-        "કડીયાકામ",
-        "પોતાનું વાહન ચલાવનાર",
-        "માળીકામ",
-        "શાકભાજી વેપારી",
-        "ફ્રૂટ વેપારી",
-        "અન્ય - વ્યક્તિગત વ્યવસાય"
-    ],
-    "અન્ય": [
-        "અન્ય વ્યવસાય"
-    ]
-};
-
-
-// ======================================================
-// BUSINESS CACHE - CATEGORY + BUSINESS BOTH IN MEMORY
-// ======================================================
-
-const BUSINESS_CACHE = {
-    categories: Object.keys(BUSINESS_DATA).slice(),
-    businesses: BUSINESS_DATA
-};
-
-const BUSINESS_CATEGORY_INDEX = {};
-BUSINESS_CACHE.categories.forEach(function(category){
-    BUSINESS_CATEGORY_INDEX[category] =
-        BUSINESS_CACHE.businesses[category] || [];
-});
-
-
-// ======================================================
-// LOAD CATEGORY - MEMORY ONLY
+// CATEGORY LOAD
 // ======================================================
 
 function loadCategory(){
 
-    const category = document.getElementById("category");
-    const fragment = document.createDocumentFragment();
+    fetch(
+        API_URL +
+        "?action=category"
+    )
 
-    category.innerHTML =
-        '<option value="">વ્યવસાયનો પ્રકાર પસંદ કરો</option>';
+    .then(res => res.json())
 
-    BUSINESS_CACHE.categories.forEach(function(item){
+    .then(data => {
 
-        const option = document.createElement("option");
-        option.value = item;
-        option.textContent = item;
+        const category =
+        document.getElementById("category");
 
-        fragment.appendChild(option);
+
+        data.forEach(function(item){
+
+            const option =
+            document.createElement("option");
+
+            option.value = item;
+
+            option.textContent = item;
+
+            category.appendChild(option);
+
+        });
+
+    })
+
+    .catch(err => {
+
+        console.log(err);
+
     });
 
-    category.appendChild(fragment);
 }
 
 
 // ======================================================
-// CATEGORY CHANGE → BUSINESS FROM MEMORY
+// BUSINESS LOAD
 // ======================================================
 
 document
 .getElementById("category")
 .addEventListener("change", function(){
 
-    const category = this.value;
-    const businessSelect = document.getElementById("business");
+    const category =
+    this.value;
 
-    businessSelect.innerHTML =
-        '<option value="">વ્યવસાય પસંદ કરો</option>';
+
+    const business =
+    document.getElementById("business");
+
+
+    business.innerHTML =
+    '<option value="">વ્યવસાય પસંદ કરો</option>';
+
 
     if(!category){
+
         return;
+
     }
 
-    const list = BUSINESS_CATEGORY_INDEX[category] || [];
-    const fragment = document.createDocumentFragment();
 
-    list.forEach(function(item){
+    fetch(
 
-        const option = document.createElement("option");
-        option.value = item;
-        option.textContent = item;
+        API_URL +
+        "?action=business&category=" +
+        encodeURIComponent(category)
 
-        fragment.appendChild(option);
+    )
+
+    .then(res => res.json())
+
+    .then(data => {
+
+        data.forEach(function(item){
+
+            const option =
+            document.createElement("option");
+
+            option.value = item;
+
+            option.textContent = item;
+
+            business.appendChild(option);
+
+        });
+
     });
 
-    businessSelect.appendChild(fragment);
 });
 
 
 // ======================================================
 // SAVE DATA
-// ======================================================
-
 // ======================================================
 
 function saveData(){
