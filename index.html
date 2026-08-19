@@ -1,9 +1,2751 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport"
+content="width=device-width, initial-scale=1">
+
+<title>Student Father Data Entry - FAST V5</title>
+
+
+<link
+href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+rel="stylesheet">
+
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    
+
+<style>
+
+body{
+
+    font-family:
+    "Arial Unicode MS",
+    "Lucida Sans Unicode",
+    Arial,
+    sans-serif;
+
+    background:#eef4fb;
+
+}
+
+
+.main-card{
+
+    max-width:900px;
+
+    margin:20px auto;
+
+    border:none;
+
+    border-radius:18px;
+
+    overflow:hidden;
+
+    background:#f7faff;
+
+    box-shadow:
+    0 8px 30px rgba(0,0,0,.10);
+
+}
+
+
+.card-header{
+
+    border-radius:0 !important;
+
+}
+
+
+label{
+
+    font-weight:600;
+
+    margin-bottom:5px;
+
+}
+
+
+.form-control,
+.form-select{
+
+    height:46px;
+
+    border-radius:9px;
+
+}
+
+
+textarea.form-control{
+
+    height:auto;
+
+}
+
+
+.form-control:focus,
+.form-select:focus{
+
+    border-color:#0d6efd;
+
+    box-shadow:
+    0 0 0 .2rem rgba(13,110,253,.12);
+
+}
+
+
+.is-invalid{
+
+    border:2px solid #dc3545 !important;
+
+}
+
+
+.invalid-feedback{
+
+    display:block;
+
+    font-size:13px;
+
+    font-weight:500;
+
+}
+
+
+#msg{
+
+    font-weight:bold;
+
+}
+
+
+/* =========================================
+   FULL SCREEN LOADER
+========================================= */
+
+#loadingOverlay{
+
+    position:fixed;
+
+    inset:0;
+
+    background:
+    rgba(255,255,255,.88);
+
+    backdrop-filter:blur(5px);
+
+    z-index:99999;
+
+    display:none;
+
+    align-items:center;
+
+    justify-content:center;
+
+    text-align:center;
+
+}
+
+
+.loader-card{
+
+    background:white;
+
+    padding:30px 35px;
+
+    border-radius:20px;
+
+    box-shadow:
+    0 10px 40px rgba(0,0,0,.15);
+
+    min-width:280px;
+
+}
+
+
+.spinner{
+
+    width:55px;
+
+    height:55px;
+
+    border:5px solid #e3e9f2;
+
+    border-top:5px solid #0d6efd;
+
+    border-radius:50%;
+
+    animation:
+    spin .8s linear infinite;
+
+    margin:0 auto 18px;
+
+}
+
+
+@keyframes spin{
+
+    100%{
+        transform:rotate(360deg);
+    }
+
+}
+
+
+.loader-title{
+
+    font-size:19px;
+
+    font-weight:700;
+
+    color:#0d6efd;
+
+}
+
+
+.loader-sub{
+
+    font-size:14px;
+
+    color:#666;
+
+    margin-top:5px;
+
+}
+
+
+/* =========================================
+   SEARCH INDICATOR
+========================================= */
+
+#studentSearchStatus{
+
+    display:none;
+
+    margin-top:7px;
+
+    font-size:13px;
+
+    font-weight:600;
+
+    color:#0d6efd;
+
+}
+
+
+.mini-spinner{
+
+    display:inline-block;
+
+    width:14px;
+
+    height:14px;
+
+    border:2px solid #dbe7ff;
+
+    border-top-color:#0d6efd;
+
+    border-radius:50%;
+
+    animation:spin .7s linear infinite;
+
+    vertical-align:-2px;
+
+    margin-right:5px;
+
+}
+
+
+.report-box{
+
+    background:#fff;
+
+    border-radius:12px;
+
+    padding:10px;
+
+    text-align:center;
+
+    box-shadow:
+    0 2px 8px rgba(0,0,0,.1);
+
+    border-left:4px solid #0d6efd;
+
+}
+
+
+.report-class{
+
+    font-weight:bold;
+
+    font-size:14px;
+
+}
+
+
+.report-count{
+
+    font-size:22px;
+
+    color:#0d6efd;
+
+    font-weight:bold;
+
+}
+
+</style>
+
+</head>
+
+
 <body>
 
-<h1>Coming Soon</h1>
-<p> સાઈટ સુધારા માટે બંધ કરેલ છે.</p>
+
+<!-- =========================================
+     LOADING OVERLAY
+========================================= -->
+
+<div id="loadingOverlay">
+
+    <div class="loader-card">
+
+        <div class="spinner"></div>
+
+        <div
+        id="loaderTitle"
+        class="loader-title">
+
+            Saving Student Data...
+
+        </div>
+
+        <div
+        id="loaderSub"
+        class="loader-sub">
+
+            Please wait
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<div class="container">
+
+
+<div class="card shadow main-card">
+
+
+<!-- =========================================
+     HEADER
+========================================= -->
+
+<div
+class="card-header bg-primary text-white text-center">
+
+
+<img
+
+src="logo.jpg"
+
+alt="School Logo"
+
+style="
+height:80px;
+width:auto;
+background:white;
+padding:5px;
+border-radius:10px;
+">
+
+
+<h3 class="mt-2 mb-1">
+
+પી.એમ.જી. ઠાકર આદર્શ હાઈસ્કૂલ, કડી
+
+</h3>
+
+
+<p class="mb-0">
+
+બહુચર માતાના મંદિર પાસે, દેત્રોજ રોડ, કડી
+
+</p>
+
+
+<h5 class="mt-2">
+
+Student Father Data Entry Form ૨૦૨૬-૨૭
+
+</h5>
+
+
+</div>
+
+
+<div class="card-body">
+
+
+<!-- REPORT -->
+
+<div class="text-center mb-3">
+
+<a
+href="report.html"
+target="_blank"
+class="btn btn-primary btn-lg">
+
+📊 Live Report Dashboard
+
+</a>
+
+</div>
+
+
+<div class="text-center mb-3">
+
+⌨️ તમામ વિગતો અંગ્રેજીમાં ભરવાની રહેશે.
+
+</div>
+
+
+<div class="row">
+
+
+<!-- =========================================
+     STD
+========================================= -->
+
+<div class="col-md-6 mb-3">
+
+<label>ધોરણ</label>
+
+<select
+id="std"
+class="form-select">
+
+<option value="">
+
+ધોરણ પસંદ કરો
+
+</option>
+
+<option value="9">9</option>
+
+<option value="10">10</option>
+
+<option value="11-Sci">11 Science</option>
+
+<option value="11-Gen">11 General</option>
+
+<option value="12-Sci">12 Science</option>
+
+<option value="12-Gen">12 General</option>
+
+</select>
+
+<div
+id="stdError"
+class="invalid-feedback">
+</div>
+
+</div>
+
+
+<!-- =========================================
+     CLASS
+========================================= -->
+
+<div class="col-md-6 mb-3">
+
+<label>વર્ગ</label>
+
+<select
+id="className"
+class="form-select">
+
+<option value="">
+
+વર્ગ પસંદ કરો
+
+</option>
+
+</select>
+
+<div
+id="classNameError"
+class="invalid-feedback">
+</div>
+
+</div>
+
+
+<!-- =========================================
+     ROLL
+========================================= -->
+
+<div class="col-md-4 mb-3">
+
+<label>રોલ નંબર</label>
+
+<input
+
+type="text"
+
+id="roll"
+
+class="form-control"
+
+inputmode="numeric"
+
+autocomplete="off"
+
+oninput="
+this.value=this.value.replace(/[^0-9]/g,'')
+">
+
+
+<div
+id="rollError"
+class="invalid-feedback">
+</div>
+
+
+<div
+id="studentSearchStatus">
+
+<span class="mini-spinner"></span>
+
+Searching for student...
+
+</div>
+
+</div>
+
+
+<!-- =========================================
+     GR
+========================================= -->
+
+<div class="col-md-4 mb-3">
+
+<label>જી.આર નંબર</label>
+
+<input
+type="text"
+id="gr"
+class="form-control">
+
+<div
+id="grError"
+class="invalid-feedback">
+</div>
+
+</div>
+
+
+<!-- =========================================
+     STUDENT NAME
+========================================= -->
+
+<div class="col-md-4 mb-3">
+
+<label>
+વિધાર્થીનું પૂરું નામ
+</label>
+
+<input
+type="text"
+id="student"
+class="form-control">
+
+<div
+id="studentError"
+class="invalid-feedback">
+</div>
+
+</div>
+
+
+<!-- =========================================
+     MOBILE
+========================================= -->
+
+<div class="col-md-6 mb-3">
+
+<label>
+મોબાઈલ નંબર (૧૦ આંકડા)
+</label>
+
+<input
+type="text"
+id="mobile"
+class="form-control"
+inputmode="numeric"
+maxlength="10">
+
+<div
+id="mobileError"
+class="invalid-feedback">
+</div>
+
+</div>
+
+
+<!-- =========================================
+     DISTRICT
+========================================= -->
+
+<div class="col-md-6 mb-3">
+
+<label>જીલ્લો</label>
+
+<select
+id="district"
+class="form-select">
+
+<option value="">
+
+જિલ્લો પસંદ કરો
+
+</option>
+
+</select>
+
+<div
+id="districtError"
+class="invalid-feedback">
+</div>
+
+</div>
+
+
+<!-- =========================================
+     TALUKA
+========================================= -->
+
+<div class="col-md-6 mb-3">
+
+<label>તાલુકો</label>
+
+<select
+id="taluka"
+class="form-select"
+disabled>
+
+<option value="">
+
+પહેલા જિલ્લો પસંદ કરો
+
+</option>
+
+</select>
+
+<div
+id="talukaError"
+class="invalid-feedback">
+</div>
+
+</div>
+
+
+<!-- =========================================
+     VILLAGE
+========================================= -->
+
+<div class="col-md-6 mb-3">
+
+<label>ગામ</label>
+
+<input
+type="text"
+id="village"
+class="form-control"
+autocomplete="off">
+
+<div
+id="villageError"
+class="invalid-feedback">
+</div>
+
+</div>
+
+
+<!-- =========================================
+     CATEGORY
+========================================= -->
+
+<div class="col-md-6 mb-3">
+
+<label>વ્યવસાયનો પ્રકાર</label>
+
+<select
+id="category"
+class="form-select">
+
+<option value="">
+
+વ્યવસાયનો પ્રકાર પસંદ કરો
+
+</option>
+
+</select>
+
+<div
+id="categoryError"
+class="invalid-feedback">
+</div>
+
+</div>
+
+
+<!-- =========================================
+     BUSINESS
+========================================= -->
+
+<div class="col-md-6 mb-3">
+
+<label>વ્યવસાય</label>
+
+<select
+id="business"
+class="form-select">
+
+<option value="">
+
+વ્યવસાય પસંદ કરો
+
+</option>
+
+</select>
+
+<div
+id="businessError"
+class="invalid-feedback">
+</div>
+
+</div>
+
+
+<!-- =========================================
+     OTHER
+========================================= -->
+
+<div class="col-12 mb-3">
+
+<label>અન્ય વિગત</label>
+
+<textarea
+id="other"
+class="form-control"
+rows="3">
+</textarea>
+
+<div
+id="otherError"
+class="invalid-feedback">
+</div>
+
+</div>
+
+
+<!-- =========================================
+     ADMISSION
+========================================= -->
+
+<div class="col-md-6 mb-3">
+
+<label>પ્રવેશનો પ્રકાર</label>
+
+<select
+id="admission"
+class="form-select">
+
+<option value="રેગ્યુલર">
+
+રેગ્યુલર
+
+</option>
+
+<option value="DLSS">
+
+DLSS
+
+</option>
+
+<option value="એકલવ્ય">
+
+એકલવ્ય
+
+</option>
+
+<option value="છાત્રાલય">
+
+છાત્રાલય
+
+</option>
+
+<option value="VHP છાત્રાલય">
+
+VHP છાત્રાલય
+
+</option>
+
+</select>
+
+<div
+id="admissionError"
+class="invalid-feedback">
+</div>
+
+</div>
+
+
+<!-- =========================================
+     UP DOWN
+========================================= -->
+
+<div class="col-md-6 mb-3">
+
+<label>
+શું વિદ્યાર્થી અપડાઉન કરે છે?
+</label>
+
+<select
+id="updown"
+class="form-select">
+
+<option value="">
+
+પસંદ કરો
+
+</option>
+
+<option value="Yes">
+
+હા
+
+</option>
+
+<option value="No">
+
+ના
+
+</option>
+
+</select>
+
+<div
+id="updownError"
+class="invalid-feedback">
+</div>
+
+</div>
+
+
+<!-- =========================================
+     SAVE
+========================================= -->
+
+<div class="col-12">
+
+<button
+
+id="saveBtn"
+
+onclick="saveData()"
+
+class="btn btn-success w-100"
+
+style="
+height:50px;
+font-size:17px;
+font-weight:600;
+">
+
+💾 Save Data
+
+</button>
+
+</div>
+
+
+<div class="col-12 mt-3">
+
+<div id="msg"></div>
+
+</div>
+
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+
+<script>
+
+
+// ======================================================
+// API URL
+// ======================================================
+
+const API_URL =
+"https://script.google.com/macros/s/AKfycbyE-fa2qyu8aLZSs5e6XEC58I18c1sPlh6ArFACH4KzI1-D9z4YnLbgbZId0caHYXgr/exec";
+
+
+// ======================================================
+// CLASS DATA
+// ======================================================
+
+const CLASS_DATA = {
+
+    "9":[
+        "A","B","C","D",
+        "E","F","G","H"
+    ],
+
+    "10":[
+        "A","B","C","D",
+        "E","F","G","H"
+    ],
+
+    "11-Sci":[
+        "A","B"
+    ],
+
+    "11-Gen":[
+        "A","B","C","D"
+    ],
+
+    "12-Sci":[
+        "A","B"
+    ],
+
+    "12-Gen":[
+        "A","B","C","D"
+    ]
+
+};
+
+
+// ======================================================
+// GUJARAT DISTRICT → TALUKA
+// ======================================================
+
+const TALUKA_DATA = {
+
+"Ahmedabad":[
+"Ahmedabad City",
+"Bavla",
+"Daskroi",
+"Dhandhuka",
+"Dholera",
+"Dholka",
+"Detroj",
+"Mandal",
+"Sanand",
+"Viramgam"
+],
+
+"Amreli":[
+"Amreli",
+"Bagasara",
+"Babra",
+"Dhari",
+"Jafrabad",
+"Khambha",
+"Kunkavav",
+"Lathi",
+"Liliya",
+"Rajula",
+"Savarkundla"
+],
+
+"Anand":[
+"Anand",
+"Anklav",
+"Borsad",
+"Khambhat",
+"Petlad",
+"Sojitra",
+"Tarapur",
+"Umreth"
+],
+
+"Aravalli":[
+"Bayad",
+"Bhilioda",
+"Dhansura",
+"Malpur",
+"Meghraj",
+"Modasa"
+],
+
+"Banaskantha":[
+"Amirgadh",
+"Bhabhar",
+"Danta",
+"Dantivada",
+"Deesa",
+"Dhanera",
+"Diyodar",
+"Kankrej",
+"Palanpur",
+"Suigam",
+"Tharad",
+"Vadgam",
+"Vav"
+],
+
+"Bharuch":[
+"Amod",
+"Ankleshwar",
+"Bharuch",
+"Jambusar",
+"Jhagadia",
+"Jambusar",
+"Valia",
+"Vagra",
+"Zagadia"
+],
+
+"Bhavnagar":[
+"Bhavnagar",
+"Botad",
+"Gadhada",
+"Garibadhar",
+"Ghogha",
+"Mahuva",
+"Palitana",
+"Sihor",
+"Talaja",
+"Vallabhipur"
+],
+
+"Botad":[
+"Barwala",
+"Botad",
+"Gadhada",
+"Ranpur"
+],
+
+"Chhota Udaipur":[
+"Chhota Udaipur",
+"Bodeli",
+"Jetpur Pavi",
+"Kavant",
+"Naswadi",
+"Sankheda"
+],
+
+"Dahod":[
+"Dahod",
+"Devgadh Baria",
+"Dhanpur",
+"Fatepura",
+"Garbadа",
+"Jhalod",
+"Limkheda",
+"Santrampur"
+],
+
+"Devbhumi Dwarka":[
+"Bhanvad",
+"Kalyanpur",
+"Khambhalia",
+"Okhamandal"
+],
+
+"Dang":[
+"Ahwa",
+"Subir",
+"Waghai"
+],
+
+"Gandhinagar":[
+"Dehgam",
+"Gandhinagar",
+"Kalol",
+"Mansa"
+],
+
+"Gir Somnath":[
+"Codeinar",
+"Gir Gadhada",
+"Sutrapada",
+"Talala",
+"Una",
+"Veraval"
+],
+
+"Jamnagar":[
+"Dhrol",
+"Jamnagar",
+"Jodiya",
+"Kalavad",
+"Lalpur"
+],
+
+"Junagadh":[
+"Bhesan",
+"Junagadh",
+"Keshod",
+"Manavadar",
+"Mangrol",
+"Maliya Hatina",
+"Vanthali",
+"Visavadar"
+],
+
+"Kheda":[
+"Kapadvanj",
+"Kheda",
+"Matar",
+"Mahemdavad",
+"Mahudha",
+"Nadiad",
+"Thasra",
+"Vaso"
+],
+
+"Kutch":[
+"Abdasa",
+"Anjar",
+"Bhachau",
+"Bhuj",
+"Gandhidham",
+"Lakhpat",
+"Mandvi",
+"Mundra",
+"Nakhatrana",
+"Rapar"
+],
+
+"Mahisagar":[
+"Balasinor",
+"Kadana",
+"Kadana",
+"Godhra",
+"Santrampur",
+"Virpur",
+"Lonawada"
+],
+
+"Mehsana":[
+"Becharaji",
+"Kadi",
+"Kheralu",
+"Mehsana",
+"Satlasana",
+"Unjha",
+"Vadnagar",
+"Vijapur",
+"Jotana",
+"Visnagar"
+],
+
+"Morbi":[
+"Halvad",
+"Maliya",
+"Morbi",
+"Tankara",
+"Wankaner"
+],
+
+"Narmada":[
+"Dediapada",
+"Garudeshwar",
+"Nandod",
+"Sagbara",
+"Tilakwada"
+],
+
+"Navsari":[
+"Chikhli",
+"Gandevi",
+"Jalalpore",
+"Navsari",
+"Vansda"
+],
+
+"Panchmahal":[
+"Godhra",
+"Halol",
+"Jambughoda",
+"Kalol",
+"Morwa Hadaf",
+"Shehera"
+],
+
+"Patan":[
+"Chanasma",
+"Dharpur",
+"Harij",
+"Patan",
+"Radhanpur",
+"Sami",
+"Santalpur",
+"Saraswati",
+"Sidhpur"
+],
+
+"Porbandar":[
+"Kutiyana",
+"Porbandar",
+"Ranavav"
+],
+
+"Rajkot":[
+"Dhoraji",
+"Gondal",
+"Jamkandorna",
+"Jasdan",
+"Jetpur",
+"Kotda Sangani",
+"Lodhika",
+"Paddhari",
+"Rajkot",
+"Upleta",
+"Vinchhiya"
+],
+
+"Sabarkantha":[
+"Himatnagar",
+"Idar",
+"Khedbrahma",
+"Prantij",
+"Talod",
+"Vadali",
+"Vijaynagar"
+],
+
+"Surat":[
+"Bardoli",
+"Choryasi",
+"Kamrej",
+"Mahuva",
+"Mangrol",
+"Mandvi",
+"Mandvi",
+"Olpad",
+"Palsana",
+"Umarpada"
+],
+
+"Surendranagar":[
+"Chotila",
+"Chuda",
+"Dhrangadhra",
+"Halvad",
+"Lakhtar",
+"Limbdi",
+"Muli",
+"Patdi",
+"Sayla",
+"Thangadh",
+"Wadhwan"
+],
+
+"Tapi":[
+"Nizar",
+"Songadh",
+"Uchchhal",
+"Valod",
+"Vyara"
+],
+
+"Vadodara":[
+"Dabhoi",
+"Desar",
+"Karjan",
+"Padra",
+"Savli",
+"Sinor",
+"Vadodara",
+"Waghodia"
+],
+
+"Valsad":[
+"Dharampur",
+"Kaprada",
+"Pardi",
+"Umbergaon",
+"Valsad",
+"Vapi"
+],
+
+"Vav-Tharad":[
+"Dharanidhar",
+"Tharad",
+"Vav"
+]
+
+};
+
+
+// ======================================================
+// PAGE LOAD
+// ======================================================
+
+window.addEventListener("load", function(){
+
+    loadClasses();
+    loadDistricts();
+
+    // Load the complete student database once.
+    // All later student searches are browser-only.
+    loadStudentDatabase().catch(function(){});
+
+    // Category is the only small server list needed at startup.
+    // Report API call was removed from page load because it is not
+    // required on the entry form and was adding an extra request.
+    loadCategory();
+
+});
+
+
+// ======================================================
+// LOAD CLASS
+// ======================================================
+
+document
+.getElementById("std")
+.addEventListener("change", function(){
+
+    const selectedStd = this.value;
+
+    const classSelect =
+    document.getElementById("className");
+
+    classSelect.innerHTML =
+    '<option value="">વર્ગ પસંદ કરો</option>';
+
+    clearStudentFields();
+
+    if(!selectedStd){
+        return;
+    }
+
+    (CLASS_DATA[selectedStd] || []).forEach(function(cls){
+
+        const option = document.createElement("option");
+        option.value = cls;
+        option.textContent = cls;
+        classSelect.appendChild(option);
+
+    });
+
+});
+
+
+// ======================================================
+// STUDENT DATABASE - ONE TIME LOAD
+// ======================================================
+// IMPORTANT:
+// Student search NEVER calls Apps Script.
+// The complete student database is loaded once into
+// browser memory and localStorage.
+// ======================================================
+
+let STUDENT_DATABASE = {};
+let STUDENT_DB_READY = false;
+let STUDENT_DB_LOADING = null;
+const STUDENT_DB_STORAGE_KEY = "STUDENT_DATABASE_2026_27_V5";
+
+
+function normalizeStudentDatabase(db){
+
+    if(!db || typeof db !== "object") return {};
+
+    const result = {};
+
+    Object.keys(db).forEach(function(classKey){
+
+        const source = db[classKey] || {};
+        const target = {};
+
+        Object.keys(source).forEach(function(roll){
+
+            const student = source[roll];
+            if(!student) return;
+
+            const cleanRoll = String(
+                student.roll || roll || ""
+            ).trim();
+
+            if(!cleanRoll) return;
+
+            target[cleanRoll] = {
+                roll: cleanRoll,
+                gr: String(student.gr || "").trim(),
+                name: String(student.name || "").trim(),
+                mobile: String(student.mobile || "").trim(),
+                sheet: String(student.sheet || "").trim()
+            };
+        });
+
+        result[classKey] = target;
+    });
+
+    return result;
+}
+
+
+function saveStudentDatabaseLocal(db){
+
+    try{
+        localStorage.setItem(
+            STUDENT_DB_STORAGE_KEY,
+            JSON.stringify({
+                version: 5,
+                time: Date.now(),
+                data: db
+            })
+        );
+    }catch(e){
+        console.warn("Student database localStorage error:", e);
+    }
+}
+
+
+function getStudentDatabaseLocal(){
+
+    try{
+        const raw = localStorage.getItem(
+            STUDENT_DB_STORAGE_KEY
+        );
+
+        if(!raw) return null;
+
+        const obj = JSON.parse(raw);
+
+        if(!obj || !obj.data) return null;
+
+        return normalizeStudentDatabase(obj.data);
+
+    }catch(e){
+        console.warn("Student database cache error:", e);
+        return null;
+    }
+}
+
+
+function showDatabaseStatus(message){
+
+    const el = document.getElementById("studentSearchStatus");
+
+    if(!el) return;
+
+    el.innerHTML = message;
+    el.style.display = "block";
+}
+
+
+function hideDatabaseStatus(){
+
+    const el = document.getElementById("studentSearchStatus");
+
+    if(el) el.style.display = "none";
+}
+
+
+// ======================================================
+// LOAD COMPLETE DATABASE - ONLY ONE SERVER REQUEST
+// ======================================================
+
+function loadStudentDatabase(){
+
+    if(STUDENT_DB_READY){
+        return Promise.resolve(STUDENT_DATABASE);
+    }
+
+    if(STUDENT_DB_LOADING){
+        return STUDENT_DB_LOADING;
+    }
+
+
+    // --------------------------------------------------
+    // 1. Browser localStorage
+    // --------------------------------------------------
+
+    const localData = getStudentDatabaseLocal();
+
+    if(localData && Object.keys(localData).length){
+
+        STUDENT_DATABASE = localData;
+        STUDENT_DB_READY = true;
+
+        console.log(
+            "Student database loaded from browser cache"
+        );
+
+        return Promise.resolve(STUDENT_DATABASE);
+    }
+
+
+    // --------------------------------------------------
+    // 2. FIRST LOAD ONLY
+    // --------------------------------------------------
+
+    showDatabaseStatus(
+        "વિદ્યાર્થી ડેટાબેઝ એક વખત લોડ થઈ રહ્યો છે..."
+    );
+
+    const url =
+        API_URL +
+        "?action=studentDatabase&_=" +
+        Date.now();
+
+    STUDENT_DB_LOADING = fetchWithTimeout(
+        url,
+        60000
+    )
+    .then(function(res){
+
+        if(!res.ok){
+            throw new Error(
+                "Server returned " + res.status
+            );
+        }
+
+        return res.json();
+    })
+    .then(function(response){
+
+        if(!response.status){
+            throw new Error(
+                response.message ||
+                "Student database could not be loaded."
+            );
+        }
+
+        const db = normalizeStudentDatabase(
+            response.database
+        );
+
+        if(!Object.keys(db).length){
+            throw new Error(
+                "Student database is empty."
+            );
+        }
+
+        STUDENT_DATABASE = db;
+        STUDENT_DB_READY = true;
+
+        saveStudentDatabaseLocal(db);
+
+        console.log(
+            "Complete student database loaded once."
+        );
+
+        hideDatabaseStatus();
+
+        return STUDENT_DATABASE;
+    })
+    .catch(function(err){
+
+        STUDENT_DB_READY = false;
+
+        console.error(
+            "Student database load failed:",
+            err
+        );
+
+        showDatabaseStatus(
+            "વિદ્યાર્થી ડેટાબેઝ લોડ થઈ શક્યો નથી. " +
+            "<button type='button' class='btn btn-sm btn-danger ms-2' " +
+            "onclick='retryStudentDatabase()'>ફરી લોડ કરો</button>"
+        );
+
+        throw err;
+
+    })
+    .finally(function(){
+        STUDENT_DB_LOADING = null;
+    });
+
+    return STUDENT_DB_LOADING;
+}
+
+
+function retryStudentDatabase(){
+
+    STUDENT_DB_READY = false;
+    STUDENT_DATABASE = {};
+
+    try{
+        localStorage.removeItem(
+            STUDENT_DB_STORAGE_KEY
+        );
+    }catch(e){}
+
+    loadStudentDatabase()
+        .catch(function(){});
+}
+
+
+// ======================================================
+// CLASS CHANGE
+// ======================================================
+
+document
+.getElementById("className")
+.addEventListener("change", function(){
+
+    clearStudentFields();
+
+    lastSearchedKey = "";
+
+});
+
+
+// ======================================================
+// ROLL SEARCH - 100% LOCAL
+// ======================================================
+
+let searchTimer = null;
+let lastSearchedKey = "";
+let searchRequestNo = 0;
+
+
+document
+.getElementById("roll")
+.addEventListener("input", function(){
+
+    const rollValue = this.value.trim();
+
+    clearTimeout(searchTimer);
+
+    if(!rollValue){
+        hideSearchStatus();
+        return;
+    }
+
+    const std =
+        document.getElementById("std").value;
+
+    const className =
+        document.getElementById("className").value;
+
+    if(!std || !className){
+        return;
+    }
+
+    const key =
+        std + "|" + className + "|" + rollValue;
+
+    if(key === lastSearchedKey){
+        return;
+    }
+
+    // Very small debounce only for typing.
+    searchTimer = setTimeout(function(){
+
+        searchStudentLocal(
+            std,
+            className,
+            rollValue
+        );
+
+    }, 120);
+
+});
+
+
+// ======================================================
+// LOCAL STUDENT SEARCH
+// ======================================================
+
+async function searchStudentLocal(std, className, roll){
+
+    const requestId = ++searchRequestNo;
+
+    // If first database load is still running, wait for it.
+    if(!STUDENT_DB_READY){
+
+        showSearchStatus(
+            "વિદ્યાર્થી ડેટાબેઝ તૈયાર થઈ રહ્યો છે..."
+        );
+
+        try{
+            await loadStudentDatabase();
+        }catch(e){
+            return;
+        }
+    }
+
+    if(requestId !== searchRequestNo){
+        return;
+    }
+
+    const classKey =
+        String(std).trim() +
+        "|" +
+        String(className).trim();
+
+    const classData =
+        STUDENT_DATABASE[classKey] || {};
+
+    const student =
+        classData[String(roll).trim()];
+
+    hideSearchStatus();
+
+    if(student){
+
+        lastSearchedKey =
+            std + "|" + className + "|" + roll;
+
+        showStudentPopup(student);
+
+    }else{
+
+        showStudentNotFound();
+    }
+}
+
+
+// ======================================================
+// STUDENT SEARCH STATUS
+// ======================================================
+
+function showSearchStatus(message){
+
+    const el =
+        document.getElementById(
+            "studentSearchStatus"
+        );
+
+    if(!el) return;
+
+    el.innerHTML = message;
+    el.style.display = "block";
+}
+
+
+function hideSearchStatus(){
+
+    const el =
+        document.getElementById(
+            "studentSearchStatus"
+        );
+
+    if(el){
+        el.style.display = "none";
+    }
+}
+
+
+// ======================================================
+// STUDENT NOT FOUND
+// ======================================================
+
+function showStudentNotFound(){
+
+    Swal.fire({
+        icon:"info",
+        title:"Student Not Found",
+        html:
+            "<b>Fill details manually.</b><br>" +
+            "આ વિદ્યાર્થીની વિગતો જાતે ભરો.",
+        confirmButtonText:"OK",
+        confirmButtonColor:"#0d6efd"
+    });
+}
+
+
+// ======================================================
+// FETCH WITH TIMEOUT
+// ======================================================
+
+function fetchWithTimeout(url, timeoutMs){
+
+    const controller = new AbortController();
+    const timer = setTimeout(function(){
+        controller.abort();
+    }, timeoutMs);
+
+    return fetch(url, { signal: controller.signal })
+        .finally(function(){
+            clearTimeout(timer);
+        });
+}
+
+// ======================================================
+// STUDENT POPUP
+// ======================================================
+
+function showStudentPopup(student){
+
+    Swal.fire({
+
+        icon:"question",
+
+        title:"Student Found",
+
+        html:`
+
+        <div style="
+        text-align:left;
+        background:#f7faff;
+        padding:15px;
+        border-radius:12px;
+        ">
+
+        <div style="
+        margin-bottom:8px;
+        ">
+        <b>Roll No.:</b>
+        ${escapeHtml(student.roll)}
+        </div>
+
+        <div style="
+        margin-bottom:8px;
+        ">
+        <b>GR No.:</b>
+        ${escapeHtml(student.gr)}
+        </div>
+
+        <div style="
+        margin-bottom:8px;
+        ">
+        <b>Name:</b>
+        ${escapeHtml(student.name)}
+        </div>
+
+        <div>
+        <b>Mobile:</b>
+        ${escapeHtml(student.mobile)}
+        </div>
+
+        </div>
+
+        <div style="
+        margin-top:15px;
+        font-weight:600;
+        ">
+        Is this the correct student?
+        </div>
+
+        `,
+
+        showCancelButton:true,
+
+        confirmButtonText:"✓ OK",
+
+        cancelButtonText:"Cancel",
+
+        confirmButtonColor:"#198754",
+
+        cancelButtonColor:"#dc3545",
+
+        reverseButtons:true
+
+    })
+
+    .then(result => {
+
+        if(result.isConfirmed){
+
+            document.getElementById("gr")
+            .value = student.gr || "";
+
+            document.getElementById("student")
+            .value = student.name || "";
+
+            document.getElementById("mobile")
+            .value = student.mobile || "";
+
+
+            Swal.fire({
+
+                icon:"success",
+
+                title:"Details Filled",
+
+                text:
+                "Student details have been added to the form.",
+
+                timer:1200,
+
+                showConfirmButton:false
+
+            });
+
+        }
+
+    });
+
+}
+
+
+// ======================================================
+// LOCATION CACHE - ALL DISTRICTS + TALUKAS IN BROWSER MEMORY
+// ======================================================
+
+const LOCATION_CACHE = {
+    districts: Object.keys(TALUKA_DATA).sort(),
+    talukas: TALUKA_DATA
+};
+
+const DISTRICT_INDEX = {};
+LOCATION_CACHE.districts.forEach(function(name){
+    DISTRICT_INDEX[name] = LOCATION_CACHE.talukas[name] || [];
+});
+
+
+// ======================================================
+// LOAD DISTRICTS - MEMORY ONLY
+// ======================================================
+
+function loadDistricts(){
+
+    const district = document.getElementById("district");
+    const fragment = document.createDocumentFragment();
+
+    district.innerHTML = '<option value="">જિલ્લો પસંદ કરો</option>';
+
+    LOCATION_CACHE.districts.forEach(function(name){
+
+        const option = document.createElement("option");
+        option.value = name;
+        option.textContent = name;
+
+        fragment.appendChild(option);
+    });
+
+    district.appendChild(fragment);
+}
+
+
+// ======================================================
+// DISTRICT CHANGE - TALUKA FROM MEMORY
+// ======================================================
+
+document
+.getElementById("district")
+.addEventListener("change", function(){
+
+    const districtName = this.value;
+    const taluka = document.getElementById("taluka");
+
+    taluka.innerHTML = '<option value="">તાલુકો પસંદ કરો</option>';
+
+    if(!districtName){
+        taluka.disabled = true;
+        return;
+    }
+
+    const list = DISTRICT_INDEX[districtName] || [];
+    const fragment = document.createDocumentFragment();
+
+    list.forEach(function(name){
+
+        const option = document.createElement("option");
+        option.value = name;
+        option.textContent = name;
+
+        fragment.appendChild(option);
+    });
+
+    taluka.appendChild(fragment);
+    taluka.disabled = false;
+});
+
+
+// ======================================================
+// BUSINESS DATA - DIRECTLY IN HTML + BROWSER MEMORY
+// ======================================================
+
+// No Google Apps Script request is needed for category/business.
+// This makes both dropdowns instant.
+// ======================================================
+
+const BUSINESS_DATA = {
+    "ખેતી અને પશુપાલન": [
+        "ખેડૂત",
+        "ડેરી ફાર્મર",
+        "પશુપાલક"
+    ],
+    "સરકારી નોકરી": [
+        "પ્રાથમિક શાળામાં શિક્ષક",
+        "માધ્યમિક  શાળામાં શિક્ષક",
+        "ઉ. માધ્યમિક  શાળામાં શિક્ષક",
+        "પોલીસ",
+        "ક્લાર્ક",
+        "સરકારી અધિકારી",
+        "અન્ય"
+    ],
+    "ખાનગી નોકરી": [
+        "કંપની કર્મચારી",
+        "મેનેજર",
+        "સેલ્સમેન",
+        "અન્ય - ખાનગી નોકરી"
+    ],
+    "વેપાર / ધંધો": [
+        "દુકાનદાર",
+        "હોલસેલ વેપારી",
+        "રિટેલ વેપારી",
+        "અન્ય - વેપાર / ધંધો"
+    ],
+    "ઉદ્યોગ / ઉત્પાદન": [
+        "ફેક્ટરી માલિક",
+        "ઉદ્યોગપતિ",
+        "અન્ય - ઉદ્યોગ / ઉત્પાદન"
+    ],
+    "વ્યક્તિગત વ્યવસાય": [
+        "પ્લંબરિંગ",
+        "ઇલેક્ટ્રિશિયન",
+        "કડીયાકામ",
+        "પોતાનું વાહન ચલાવનાર",
+        "માળીકામ",
+        "શાકભાજી વેપારી",
+        "ફ્રૂટ વેપારી",
+        "અન્ય - વ્યક્તિગત વ્યવસાય"
+    ],
+    "અન્ય": [
+        "અન્ય વ્યવસાય"
+    ]
+};
+
+
+// ======================================================
+// BUSINESS CACHE - CATEGORY + BUSINESS BOTH IN MEMORY
+// ======================================================
+
+const BUSINESS_CACHE = {
+    categories: Object.keys(BUSINESS_DATA).slice(),
+    businesses: BUSINESS_DATA
+};
+
+const BUSINESS_CATEGORY_INDEX = {};
+BUSINESS_CACHE.categories.forEach(function(category){
+    BUSINESS_CATEGORY_INDEX[category] =
+        BUSINESS_CACHE.businesses[category] || [];
+});
+
+
+// ======================================================
+// LOAD CATEGORY - MEMORY ONLY
+// ======================================================
+
+function loadCategory(){
+
+    const category = document.getElementById("category");
+    const fragment = document.createDocumentFragment();
+
+    category.innerHTML =
+        '<option value="">વ્યવસાયનો પ્રકાર પસંદ કરો</option>';
+
+    BUSINESS_CACHE.categories.forEach(function(item){
+
+        const option = document.createElement("option");
+        option.value = item;
+        option.textContent = item;
+
+        fragment.appendChild(option);
+    });
+
+    category.appendChild(fragment);
+}
+
+
+// ======================================================
+// CATEGORY CHANGE → BUSINESS FROM MEMORY
+// ======================================================
+
+document
+.getElementById("category")
+.addEventListener("change", function(){
+
+    const category = this.value;
+    const businessSelect = document.getElementById("business");
+
+    businessSelect.innerHTML =
+        '<option value="">વ્યવસાય પસંદ કરો</option>';
+
+    if(!category){
+        return;
+    }
+
+    const list = BUSINESS_CATEGORY_INDEX[category] || [];
+    const fragment = document.createDocumentFragment();
+
+    list.forEach(function(item){
+
+        const option = document.createElement("option");
+        option.value = item;
+        option.textContent = item;
+
+        fragment.appendChild(option);
+    });
+
+    businessSelect.appendChild(fragment);
+});
+
+
+// ======================================================
+// SAVE DATA
+// ======================================================
+
+// ======================================================
+
+function saveData(){
+
+    clearErrors();
+
+
+    const data = {
+
+        std:
+        document.getElementById("std")
+        .value.trim(),
+
+        className:
+        document.getElementById("className")
+        .value.trim(),
+
+        roll:
+        document.getElementById("roll")
+        .value.trim(),
+
+        gr:
+        document.getElementById("gr")
+        .value.trim(),
+
+        student:
+        document.getElementById("student")
+        .value.trim(),
+
+        mobile:
+        document.getElementById("mobile")
+        .value.trim(),
+
+        district:
+        document.getElementById("district")
+        .value.trim(),
+
+        taluka:
+        document.getElementById("taluka")
+        .value.trim(),
+
+        village:
+        document.getElementById("village")
+        .value.trim(),
+
+        category:
+        document.getElementById("category")
+        .value.trim(),
+
+        business:
+        document.getElementById("business")
+        .value.trim(),
+
+        other:
+        document.getElementById("other")
+        .value.trim(),
+
+        admission:
+        document.getElementById("admission")
+        .value.trim(),
+
+        updown:
+        document.getElementById("updown")
+        .value.trim()
+
+    };
+
+
+    // ==============================================
+    // VALIDATION
+    // ==============================================
+
+    if(!data.std){
+
+        showError(
+            "std",
+            "ધોરણ પસંદ કરો."
+        );
+
+        return;
+
+    }
+
+
+    if(!data.className){
+
+        showError(
+            "className",
+            "વર્ગ પસંદ કરો."
+        );
+
+        return;
+
+    }
+
+
+    if(!data.roll){
+
+        showError(
+            "roll",
+            "Roll નંબર લખો."
+        );
+
+        return;
+
+    }
+
+
+    if(!/^\d+$/.test(data.roll)){
+
+        showError(
+            "roll",
+            "માત્ર નંબર લખો."
+        );
+
+        return;
+
+    }
+
+
+    if(!data.gr){
+
+        showError(
+            "gr",
+            "GR નંબર લખો."
+        );
+
+        return;
+
+    }
+
+
+    if(!data.student){
+
+        showError(
+            "student",
+            "વિદ્યાર્થીનું નામ લખો."
+        );
+
+        return;
+
+    }
+
+
+    if(!data.mobile){
+
+        showError(
+            "mobile",
+            "મોબાઈલ નંબર લખો."
+        );
+
+        return;
+
+    }
+
+
+    if(!/^[6-9]\d{9}$/.test(data.mobile)){
+
+        showError(
+            "mobile",
+            "યોગ્ય 10 અંકનો મોબાઈલ નંબર લખો."
+        );
+
+        return;
+
+    }
+
+
+    if(!data.district){
+
+        showError(
+            "district",
+            "જિલ્લો પસંદ કરો."
+        );
+
+        return;
+
+    }
+
+
+    if(!data.taluka){
+
+        showError(
+            "taluka",
+            "તાલુકો પસંદ કરો."
+        );
+
+        return;
+
+    }
+
+
+    if(!data.village){
+
+        showError(
+            "village",
+            "ગામ લખો."
+        );
+
+        return;
+
+    }
+
+
+    if(!data.category){
+
+        showError(
+            "category",
+            "Category પસંદ કરો."
+        );
+
+        return;
+
+    }
+
+
+    if(!data.business){
+
+        showError(
+            "business",
+            "Business પસંદ કરો."
+        );
+
+        return;
+
+    }
+
+
+    if(!data.updown){
+
+        showError(
+            "updown",
+            "અપડાઉન પસંદ કરો."
+        );
+
+        return;
+
+    }
+
+
+    // ==============================================
+    // SAVE
+    // ==============================================
+
+    const btn =
+    document.getElementById("saveBtn");
+
+
+    btn.disabled = true;
+
+
+    showLoader(
+        "Saving Student Data...",
+        "Please wait while data is being saved."
+    );
+
+
+    fetch(API_URL,{
+
+        method:"POST",
+
+        body:JSON.stringify(data)
+
+    })
+
+    .then(res => res.json())
+
+    .then(response => {
+
+
+        if(response.status){
+
+            hideLoader();
+
+
+            // --------------------------------------
+            // CONFIRMATION POPUP
+            // --------------------------------------
+
+            Swal.fire({
+
+                icon:"success",
+
+                title:"Entry Saved Successfully",
+
+                html:`
+
+                <div style="
+                text-align:left;
+                background:#f7faff;
+                padding:15px;
+                border-radius:12px;
+                ">
+
+                <div>
+                <b>Student:</b>
+                ${escapeHtml(data.student)}
+                </div>
+
+                <div>
+                <b>Roll No.:</b>
+                ${escapeHtml(data.roll)}
+                </div>
+
+                <div>
+                <b>GR:</b>
+                ${escapeHtml(data.gr)}
+                </div>
+
+                <div>
+                <b>Mobile:</b>
+                ${escapeHtml(data.mobile)}
+                </div>
+
+                <div>
+                <b>Class:</b>
+                ${escapeHtml(data.std)}
+                -
+                ${escapeHtml(data.className)}
+                </div>
+
+                <div>
+                <b>District:</b>
+                ${escapeHtml(data.district)}
+                </div>
+
+                <div>
+                <b>Taluka:</b>
+                ${escapeHtml(data.taluka)}
+                </div>
+
+                <div>
+                <b>Village:</b>
+                ${escapeHtml(data.village)}
+                </div>
+
+                </div>
+
+                `,
+
+                confirmButtonText:"OK",
+
+                confirmButtonColor:"#198754"
+
+            });
+
+
+            // --------------------------------------
+            // RESET FOR NEXT STUDENT
+            // KEEP STD + CLASS
+            // --------------------------------------
+
+            document.getElementById("roll").value="";
+
+            document.getElementById("gr").value="";
+
+            document.getElementById("student").value="";
+
+            document.getElementById("mobile").value="";
+
+            document.getElementById("village").value="";
+
+            document.getElementById("other").value="";
+
+            document.getElementById("district").selectedIndex=0;
+
+            document.getElementById("taluka").innerHTML =
+            '<option value="">તાલુકો પસંદ કરો</option>';
+
+            document.getElementById("taluka").disabled=true;
+
+            document.getElementById("category").selectedIndex=0;
+
+            document.getElementById("business").innerHTML =
+            '<option value="">વ્યવસાય પસંદ કરો</option>';
+
+            document.getElementById("admission").selectedIndex=0;
+
+            document.getElementById("updown").selectedIndex=0;
+
+
+            lastSearchedKey = "";
+
+
+            loadReport();
+
+
+            setTimeout(function(){
+
+                document
+                .getElementById("roll")
+                .focus();
+
+            },500);
+
+        }
+
+        else{
+
+            hideLoader();
+
+            Swal.fire({
+
+                icon:"error",
+
+                title:"Save Failed",
+
+                text:
+                response.message ||
+                "Data could not be saved."
+
+            });
+
+        }
+
+    })
+
+    .catch(err => {
+
+        hideLoader();
+
+        console.log(err);
+
+        Swal.fire({
+
+            icon:"error",
+
+            title:"Connection Error",
+
+            text:
+            "Data save failed. Please try again."
+
+        });
+
+    })
+
+    .finally(function(){
+
+        btn.disabled=false;
+
+    });
+
+}
+
+
+// ======================================================
+// LOADER
+// ======================================================
+
+function showLoader(
+    title,
+    sub
+){
+
+    document
+    .getElementById("loaderTitle")
+    .innerHTML = title;
+
+
+    document
+    .getElementById("loaderSub")
+    .innerHTML = sub;
+
+
+    document
+    .getElementById("loadingOverlay")
+    .style.display = "flex";
+
+}
+
+
+function hideLoader(){
+
+    document
+    .getElementById("loadingOverlay")
+    .style.display = "none";
+
+}
+
+
+// ======================================================
+// SEARCH STATUS
+// ======================================================
+
+function showSearchStatus(message){
+
+    const el = document.getElementById("studentSearchStatus");
+
+    if(message){
+        el.innerHTML =
+            '<span class="mini-spinner"></span>' +
+            escapeHtml(message);
+    }
+
+    el.style.display = "block";
+
+}
+
+
+function hideSearchStatus(){
+
+    document
+    .getElementById("studentSearchStatus")
+    .style.display = "none";
+
+}
+
+
+// ======================================================
+// CLEAR STUDENT FIELDS
+// ======================================================
+
+function clearStudentFields(){
+
+    document.getElementById("roll").value="";
+
+    document.getElementById("gr").value="";
+
+    document.getElementById("student").value="";
+
+    document.getElementById("mobile").value="";
+
+    lastSearchedKey="";
+
+}
+
+
+// ======================================================
+// CLEAR ERRORS
+// ======================================================
+
+function clearErrors(){
+
+    document
+    .querySelectorAll(
+        ".form-control,.form-select"
+    )
+    .forEach(function(el){
+
+        el.classList.remove(
+            "is-invalid"
+        );
+
+    });
+
+
+    document
+    .querySelectorAll(
+        ".invalid-feedback"
+    )
+    .forEach(function(el){
+
+        el.innerHTML="";
+
+    });
+
+}
+
+
+// ======================================================
+// SHOW ERROR
+// ======================================================
+
+function showError(
+    id,
+    message
+){
+
+    const el =
+    document.getElementById(id);
+
+
+    el.classList.add(
+        "is-invalid"
+    );
+
+
+    const error =
+    document.getElementById(
+        id + "Error"
+    );
+
+
+    if(error){
+
+        error.innerHTML =
+        message;
+
+    }
+
+
+    el.focus();
+
+}
+
+
+// ======================================================
+// REPORT
+// ======================================================
+
+function loadReport(){
+
+    fetch(
+        API_URL +
+        "?action=report"
+    )
+
+    .then(res => res.json())
+
+    .then(data => {
+
+        // report.html અલગ page છે,
+        // અહીં reportArea નથી એટલે error નહીં કરીએ.
+
+        console.log(
+            "Report refreshed",
+            data
+        );
+
+    })
+
+    .catch(err => {
+
+        console.log(err);
+
+    });
+
+}
+
+
+// ======================================================
+// HTML ESCAPE
+// ======================================================
+
+function escapeHtml(value){
+
+    return String(value || "")
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;")
+    .replace(/'/g,"&#039;");
+
+}
+
+</script>
 
 </body>
+
 </html>
