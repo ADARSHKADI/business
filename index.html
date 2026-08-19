@@ -716,7 +716,8 @@ class="invalid-feedback">
 
 <select
 id="business"
-class="form-select">
+class="form-select"
+disabled>
 
 <option value="">
 
@@ -1300,13 +1301,10 @@ const TALUKA_DATA = {
 
 window.addEventListener("load", function(){
 
-    loadClasses();
+    // All these lists are local/cached. Only one small catalog request
+    // is made for Category + Business together.
     loadDistricts();
-
-    // Category is the only small server list needed at startup.
-    // Report API call was removed from page load because it is not
-    // required on the entry form and was adding an extra request.
-    loadCategory();
+    loadBusinessCatalog();
 
 });
 
@@ -1498,7 +1496,7 @@ document
     // 250 ms is enough for normal typing and feels much faster than 1500 ms.
     searchTimer = setTimeout(function(){
         searchStudentFast(std, className, rollValue);
-    }, 1700);
+    }, 1900);
 
 });
 
@@ -1906,101 +1904,112 @@ document
 
 
 // ======================================================
-// CATEGORY LOAD
+// CATEGORY + BUSINESS CATALOG LOAD
 // ======================================================
 
-function loadCategory(){
+let businessCatalog = {};
+let businessCatalogPromise = null;
 
-    fetch(
-        API_URL +
-        "?action=category"
+function loadBusinessCatalog(){
+
+    if(Object.keys(businessCatalog).length){
+        populateCategories();
+        return Promise.resolve(businessCatalog);
+    }
+
+    if(businessCatalogPromise){
+        return businessCatalogPromise;
+    }
+
+    businessCatalogPromise = fetchWithTimeout(
+        API_URL + "?action=businessCatalog",
+        10000
     )
+    .then(function(res){
 
-    .then(res => res.json())
+        if(!res.ok){
+            throw new Error("Business catalog server error " + res.status);
+        }
 
-    .then(data => {
-
-        const category =
-        document.getElementById("category");
-
-
-        data.forEach(function(item){
-
-            const option =
-            document.createElement("option");
-
-            option.value = item;
-
-            option.textContent = item;
-
-            category.appendChild(option);
-
-        });
+        return res.json();
 
     })
+    .then(function(data){
 
-    .catch(err => {
+        businessCatalog = data || {};
+        populateCategories();
+        return businessCatalog;
 
-        console.log(err);
+    })
+    .catch(function(err){
+
+        console.log("Business catalog error:", err);
+        businessCatalog = {};
+        populateCategories();
+        return {};
 
     });
 
+    return businessCatalogPromise;
+}
+
+
+function populateCategories(){
+
+    const category = document.getElementById("category");
+
+    category.innerHTML =
+        '<option value="">વ્યવસાયનો પ્રકાર પસંદ કરો</option>';
+
+    Object.keys(businessCatalog)
+        .sort()
+        .forEach(function(item){
+
+            const option = document.createElement("option");
+            option.value = item;
+            option.textContent = item;
+            category.appendChild(option);
+
+        });
+}
+
+
+function populateBusinesses(categoryName){
+
+    const business = document.getElementById("business");
+
+    business.innerHTML =
+        '<option value="">વ્યવસાય પસંદ કરો</option>';
+
+    if(!categoryName){
+        business.disabled = true;
+        return;
+    }
+
+    const list = businessCatalog[categoryName] || [];
+
+    list.forEach(function(item){
+
+        const option = document.createElement("option");
+        option.value = item;
+        option.textContent = item;
+        business.appendChild(option);
+
+    });
+
+    business.disabled = false;
 }
 
 
 // ======================================================
-// BUSINESS LOAD
+// BUSINESS CHANGE - LOCAL ONLY
 // ======================================================
 
 document
 .getElementById("category")
 .addEventListener("change", function(){
 
-    const category =
-    this.value;
-
-
-    const business =
-    document.getElementById("business");
-
-
-    business.innerHTML =
-    '<option value="">વ્યવસાય પસંદ કરો</option>';
-
-
-    if(!category){
-
-        return;
-
-    }
-
-
-    fetch(
-
-        API_URL +
-        "?action=business&category=" +
-        encodeURIComponent(category)
-
-    )
-
-    .then(res => res.json())
-
-    .then(data => {
-
-        data.forEach(function(item){
-
-            const option =
-            document.createElement("option");
-
-            option.value = item;
-
-            option.textContent = item;
-
-            business.appendChild(option);
-
-        });
-
-    });
+    populateBusinesses(this.value);
 
 });
 
