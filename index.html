@@ -716,8 +716,7 @@ class="invalid-feedback">
 
 <select
 id="business"
-class="form-select"
-disabled>
+class="form-select">
 
 <option value="">
 
@@ -1301,10 +1300,13 @@ const TALUKA_DATA = {
 
 window.addEventListener("load", function(){
 
-    // All these lists are local/cached. Only one small catalog request
-    // is made for Category + Business together.
+    loadClasses();
     loadDistricts();
-    loadBusinessCatalog();
+
+    // Category is the only small server list needed at startup.
+    // Report API call was removed from page load because it is not
+    // required on the entry form and was adding an extra request.
+    loadCategory();
 
 });
 
@@ -1496,7 +1498,7 @@ document
     // 250 ms is enough for normal typing and feels much faster than 1500 ms.
     searchTimer = setTimeout(function(){
         searchStudentFast(std, className, rollValue);
-    }, 1900);
+    }, 1700);
 
 });
 
@@ -1904,113 +1906,99 @@ document
 
 
 // ======================================================
-// CATEGORY + BUSINESS CATALOG LOAD
+// BUSINESS DATA - DIRECTLY IN HTML
+// No Google Apps Script request is needed for category/business.
+// This makes both dropdowns instant.
 // ======================================================
 
-let businessCatalog = {};
-let businessCatalogPromise = null;
+const BUSINESS_DATA = {
+    "ખેતી અને પશુપાલન": [
+        "ખેડૂત",
+        "ડેરી ફાર્મર",
+        "પશુપાલક"
+    ],
+    "સરકારી નોકરી": [
+        "પ્રાથમિક શાળામાં શિક્ષક",
+        "માધ્યમિક  શાળામાં શિક્ષક",
+        "ઉ. માધ્યમિક  શાળામાં શિક્ષક",
+        "પોલીસ",
+        "ક્લાર્ક",
+        "સરકારી અધિકારી",
+        "અન્ય"
+    ],
+    "ખાનગી નોકરી": [
+        "કંપની કર્મચારી",
+        "મેનેજર",
+        "સેલ્સમેન",
+        "અન્ય - ખાનગી નોકરી"
+    ],
+    "વેપાર / ધંધો": [
+        "દુકાનદાર",
+        "હોલસેલ વેપારી",
+        "રિટેલ વેપારી",
+        "અન્ય - વેપાર / ધંધો"
+    ],
+    "ઉદ્યોગ / ઉત્પાદન": [
+        "ફેક્ટરી માલિક",
+        "ઉદ્યોગપતિ",
+        "અન્ય - ઉદ્યોગ / ઉત્પાદન"
+    ],
+    "વ્યક્તિગત વ્યવસાય": [
+        "પ્લંબરિંગ",
+        "ઇલેક્ટ્રિશિયન",
+        "કડીયાકામ",
+        "પોતાનું વાહન ચલાવનાર",
+        "માળીકામ",
+        "શાકભાજી વેપારી",
+        "ફ્રૂટ વેપારી",
+        "અન્ય - વ્યક્તિગત વ્યવસાય"
+    ],
+    "અન્ય": [
+        "અન્ય વ્યવસાય"
+    ]
+};
 
-function loadBusinessCatalog(){
 
-    if(Object.keys(businessCatalog).length){
-        populateCategories();
-        return Promise.resolve(businessCatalog);
-    }
+// ======================================================
+// LOAD CATEGORY - LOCAL
+// ======================================================
 
-    if(businessCatalogPromise){
-        return businessCatalogPromise;
-    }
-
-    businessCatalogPromise = fetchWithTimeout(
-        API_URL + "?action=businessCatalog",
-        10000
-    )
-    .then(function(res){
-
-        if(!res.ok){
-            throw new Error("Business catalog server error " + res.status);
-        }
-
-        return res.json();
-
-    })
-    .then(function(data){
-
-        businessCatalog = data || {};
-        populateCategories();
-        return businessCatalog;
-
-    })
-    .catch(function(err){
-
-        console.log("Business catalog error:", err);
-        businessCatalog = {};
-        populateCategories();
-        return {};
-
-    });
-
-    return businessCatalogPromise;
-}
-
-
-function populateCategories(){
-
+function loadCategory(){
     const category = document.getElementById("category");
 
     category.innerHTML =
         '<option value="">વ્યવસાયનો પ્રકાર પસંદ કરો</option>';
 
-    Object.keys(businessCatalog)
-        .sort()
-        .forEach(function(item){
-
-            const option = document.createElement("option");
-            option.value = item;
-            option.textContent = item;
-            category.appendChild(option);
-
-        });
-}
-
-
-function populateBusinesses(categoryName){
-
-    const business = document.getElementById("business");
-
-    business.innerHTML =
-        '<option value="">વ્યવસાય પસંદ કરો</option>';
-
-    if(!categoryName){
-        business.disabled = true;
-        return;
-    }
-
-    const list = businessCatalog[categoryName] || [];
-
-    list.forEach(function(item){
-
+    Object.keys(BUSINESS_DATA).forEach(function(item){
         const option = document.createElement("option");
         option.value = item;
         option.textContent = item;
-        business.appendChild(option);
-
+        category.appendChild(option);
     });
-
-    business.disabled = false;
 }
 
 
 // ======================================================
-// BUSINESS CHANGE - LOCAL ONLY
+// CATEGORY CHANGE → BUSINESS - LOCAL
 // ======================================================
 
-document
-.getElementById("category")
-.addEventListener("change", function(){
+document.getElementById("category").addEventListener("change", function(){
+    const category = this.value;
+    const businessSelect = document.getElementById("business");
 
-    populateBusinesses(this.value);
+    businessSelect.innerHTML =
+        '<option value="">વ્યવસાય પસંદ કરો</option>';
 
+    if(!category || !BUSINESS_DATA[category]){
+        return;
+    }
+
+    BUSINESS_DATA[category].forEach(function(item){
+        const option = document.createElement("option");
+        option.value = item;
+        option.textContent = item;
+        businessSelect.appendChild(option);
+    });
 });
 
 
